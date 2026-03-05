@@ -1,0 +1,51 @@
+:root {
+    --primary: #00ff88;
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --text: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+}
+
+nav { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+
+.match-card {
+    background: var(--card);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-left: 5px solid var(--primary);
+}
+
+input[type="number"] {
+    width: 40px;
+    padding: 5px;
+    text-align: center;
+    border-radius: 5px;
+    border: none;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }

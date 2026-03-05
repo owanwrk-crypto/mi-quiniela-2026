@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela Mundial 2026 ⚽</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <nav>
+        <h1>🏆 Mundial 2026 - Amigos</h1>
+        <div id="user-info"></div>
+    </nav>
+
+    <main>
+        <section id="ranking-section">
+            <h2>📊 Tabla de Posiciones</h2>
+            <table id="ranking-table">
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Jugador</th>
+                        <th>Pts</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-body"></tbody>
+            </table>
+        </section>
+
+        <section id="matches-section">
+            <h2>📅 Partidos Próximos</h2>
+            <div id="matches-container"></div>
+            <button id="save-predictions" class="btn-primary">Guardar mis Pronósticos</button>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
