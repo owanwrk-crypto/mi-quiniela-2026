@@ -51,16 +51,27 @@ async function loadMatches(fase) {
     matches.forEach(m => {
         const matchDate = new Date(m.fecha);
         const lockTime = new Date(matchDate.getTime() - (3 * 60 * 60 * 1000));
-        const isLocked = now > lockTime;
+        const isPastTime = now > lockTime; // Bloqueo por tiempo (3 horas antes)
+        
         const bet = myBets.find(b => b.partido_id === m.id);
+        
+        // REGLA DE BLOQUEO: Se bloquea si ya pasó el tiempo O si ya existe una apuesta guardada
+        const alreadySaved = bet !== undefined && bet.goles_a_user !== null;
+        const shouldLock = isPastTime || alreadySaved;
 
         container.innerHTML += `
-            <div class="match-card ${isLocked ? 'locked' : ''}">
+            <div class="match-card ${shouldLock ? 'locked' : ''}">
                 <div class="team" style="text-align:right">${m.equipo_a}</div>
-                <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${isLocked ? 'disabled' : ''}>
-                <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${isLocked ? 'disabled' : ''}>
+                <input type="number" class="score-box" id="a-${m.id}" 
+                    value="${bet?.goles_a_user ?? ''}" 
+                    ${shouldLock ? 'disabled' : ''}>
+                
+                <input type="number" class="score-box" id="b-${m.id}" 
+                    value="${bet?.goles_b_user ?? ''}" 
+                    ${shouldLock ? 'disabled' : ''}>
+                
                 <div class="team">${m.equipo_b}</div>
-                ${isLocked ? '<span>🔒</span>' : ''}
+                ${shouldLock ? '<span>🔒</span>' : ''}
             </div>
         `;
     });
