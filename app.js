@@ -66,29 +66,53 @@ async function loadMatches(fase) {
     });
 }
 
+// ... (otras funciones como loadMatches)
+
 async function savePredictions() {
-    const cards = document.querySelectorAll('.match-card:not(.locked)');
+    // 1. Preguntar al usuario antes de proceder
+    const confirmacion = confirm("⚠️ ¿Estás seguro de guardar tus pronósticos?\n\nUna vez guardados, NO podrás modificarlos ni corregirlos.");
+
+    if (!confirmacion) return; 
+
+    const cards = document.querySelectorAll('.match-card');
     const dataToSave = [];
 
     cards.forEach(card => {
-        const id = card.querySelector('input').id.split('-')[1];
-        const ga = document.getElementById(`a-${id}`).value;
-        const gb = document.getElementById(`b-${id}`).value;
+        const inputA = card.querySelector('input[id^="a-"]');
+        const inputB = card.querySelector('input[id^="b-"]');
+        const id = inputA.id.split('-')[1];
 
-        if (ga !== "" && gb !== "") {
-            dataToSave.push({
-                perfil_id: currentUser.id,
-                partido_id: parseInt(id),
-                goles_a_user: parseInt(ga),
-                goles_b_user: parseInt(gb)
-            });
+        if (!inputA.disabled && !inputB.disabled) {
+            const ga = inputA.value;
+            const gb = inputB.value;
+
+            if (ga !== "" && gb !== "") {
+                dataToSave.push({
+                    perfil_id: currentUser.id,
+                    partido_id: parseInt(id),
+                    goles_a_user: parseInt(ga),
+                    goles_b_user: parseInt(gb)
+                });
+            }
         }
     });
 
+    if (dataToSave.length === 0) {
+        alert("No hay resultados nuevos para guardar.");
+        return;
+    }
+
     const { error } = await _sb.from('pronosticos').upsert(dataToSave, { onConflict: 'perfil_id, partido_id' });
-    if (error) alert("Error: " + error.message);
-    else alert("¡Pronósticos guardados!");
+    
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        alert("✅ ¡Guardado y bloqueado!");
+        loadMatches(currentFase); // Esto hace que se pongan grises los campos
+    }
 }
+
+// ... (función loadRanking abajo)
 
 async function loadRanking() {
     const { data } = await _sb.from('perfiles').select('*').order('puntos_totales', {ascending: false});
