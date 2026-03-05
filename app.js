@@ -1,4 +1,4 @@
-const URL_SB = 'Thttps://hamqbcccmefflpkurouu.supabase.co';
+const URL_SB = 'https://hamqbcccmefflpkurouu.supabase.co';
 const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
 const _sb = supabase.createClient(URL_SB, KEY_SB);
 
