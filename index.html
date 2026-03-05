@@ -3,37 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiniela Mundial 2026 ⚽</title>
+    <title>Quiniela FIFA 2026</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <nav>
-        <h1>🏆 Mundial 2026 - Amigos</h1>
-        <div id="user-info"></div>
-    </nav>
+    <header>
+        <h1>🏆 MUNDIAL FIFA 2026</h1>
+        <p id="user-display">Bienvenido a la Quiniela de Amigos</p>
+    </header>
 
-    <main>
-        <section id="ranking-section">
-            <h2>📊 Tabla de Posiciones</h2>
-            <table id="ranking-table">
+    <div id="login-section" class="container">
+        <div class="card">
+            <h2>Ingreso</h2>
+            <input type="text" id="login-name" placeholder="Tu nombre (ej: oswaldo)">
+            <input type="password" id="login-pin" placeholder="PIN de 4 dígitos">
+            <button onclick="handleLogin()" class="btn-main">ENTRAR</button>
+        </div>
+    </div>
+
+    <div id="main-section" class="container" style="display:none">
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showTab('Grupos')">Grupos</button>
+            <button class="tab-btn" onclick="showTab('Dieciseisavos')">1/16 Final</button>
+            <button class="tab-btn" onclick="showTab('Ranking')">Ranking</button>
+        </nav>
+
+        <div id="match-list"></div>
+
+        <div id="ranking-list" style="display:none">
+            <table class="ranking-table">
                 <thead>
-                    <tr>
-                        <th>Pos</th>
-                        <th>Jugador</th>
-                        <th>Pts</th>
-                    </tr>
+                    <tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>
                 </thead>
                 <tbody id="ranking-body"></tbody>
             </table>
-        </section>
+        </div>
 
-        <section id="matches-section">
-            <h2>📅 Partidos Próximos</h2>
-            <div id="matches-container"></div>
-            <button id="save-predictions" class="btn-primary">Guardar mis Pronósticos</button>
-        </section>
-    </main>
+        <button id="save-btn" onclick="savePredictions()" class="btn-float">💾 GUARDAR</button>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
