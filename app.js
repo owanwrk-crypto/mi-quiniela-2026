@@ -1,5 +1,5 @@
-const supabaseUrl = 'TU_URL_AQUI';
-const supabaseKey = 'TU_KEY_ANON_AQUI';
+const supabaseUrl = 'https://ptmuinnaaxuvxjvrbirc.supabase.co';
+const supabaseKey = 'sb_publishable_kBgZDyQcwP6WTA266u1EGg_p-lRP0M1';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Función para cargar partidos
