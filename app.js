@@ -49,11 +49,33 @@ async function loadMatches(fase) {
 
     // Diccionario simple para banderas (puedes ampliarlo)
     const getFlag = (team) => `https://flagcdn.com/w80/${getIso(team)}.png`;
-    const getIso = (t) => {
-        const codes = {'méxico':'mx', 'argentina':'ar', 'brasil':'br', 'españa':'es', 'canadá':'ca', 'estados unidos':'us', 'francia':'fr', 'alemania':'de', 'portugal':'pt', 'uruguay':'uy', 'colombia':'co', 'panamá':'pa'};
-        return codes[t.toLowerCase()] || 'un'; // 'un' es bandera de la ONU para desconocidos
-    };
+    // Reemplaza la parte interna de loadMatches donde está getIso:
 
+const getIso = (t) => {
+    const codes = {
+        // --- GRUPO A ---
+        'méxico': 'mx', 'canadá': 'ca', 'estados unidos': 'us',
+        // --- EUROPA ---
+        'españa': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 'inglaterra': 'gb',
+        'italia': 'it', 'países bajos': 'nl', 'bélgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk',
+        'suiza': 'ch', 'austria': 'at', 'hungría': 'hu', 'turquía': 'tr', 'polonia': 'pl',
+        'escocia': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
+        // --- SUDAMÉRICA ---
+        'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 'ecuador': 'ec',
+        'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'perú': 'pe',
+        // --- CONCACAF ---
+        'panamá': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
+        // --- ÁFRICA ---
+        'marruecos': 'ma', 'senegal': 'sn', 'túnez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
+        'nigeria': 'ng', 'camerún': 'cm', 'ghana el de áfrica': 'gh', 'costa de marfil': 'ci',
+        // --- ASIA / OCEANÍA ---
+        'japón': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'irán': 'ir'
+    };
+    
+    // Limpiamos el nombre: quitamos espacios extras y lo pasamos a minúsculas
+    const name = t.trim().toLowerCase();
+    return codes[name] || 'un'; // Si no lo encuentra, usa 'un' (ONU)
+};
     matches.forEach(m => {
         const isLocked = (now > new Date(new Date(m.fecha).getTime() - (3*60*60*1000))) || myBets.some(b => b.partido_id === m.id);
         const bet = myBets.find(b => b.partido_id === m.id);
