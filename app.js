@@ -15,7 +15,7 @@ async function handleLogin() {
         currentUser = data;
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('main-section').style.display = 'block';
-        document.getElementById('user-display').innerText = `Jugador: ${data.nombre}`;
+        document.getElementById('user-display').innerHTML = `<span>JUGADOR:</span> ${data.nombre}`;
         showTab('Grupos');
     } else {
         alert("Nombre o PIN incorrectos");
