@@ -52,9 +52,20 @@ const getIso = (t) => {
 
     const name = normalize(t);
     const codes = {
+        'mexico': 'mx', 'canada': 'ca', 'estados unidos': 'us', 'usa': 'us',
+        'espana': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 
+        'inglaterra': 'gb-eng', 'italia': 'it', 'paises bajos': 'nl', 'holanda': 'nl',
+        'belgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk', 'suiza': 'ch', 
+        'austria': 'at', 'hungria': 'hu', 'turquia': 'tr', 'polonia': 'pl',
+        'escocia': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
+        'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 
+        'ecuador': 'ec', 'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'peru': 'pe',
+        'panama': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
+        'marruecos': 'ma', 'senegal': 'sn', 'tunez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
+        'nigeria': 'ng', 'camerun': 'cm', 'ghana': 'gh', 'costa de marfil': 'ci',
+        'japon': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'iran': 'ir',
         // --- NUEVOS PAÍSES AÑADIDOS ---
-        'sudafrica': 'za',
-        'republica de corea': 'kr',
+        'sudafrica': 'za','republica de corea': 'kr',
         'corea del sur': 'kr',
         'catar': 'qa',
         'qatar': 'qa',
@@ -69,18 +80,6 @@ const getIso = (t) => {
         'uzbekistan': 'uz',
         'ghana': 'gh',
         'china': 'cn'
-        'mexico': 'mx', 'canada': 'ca', 'estados unidos': 'us', 'usa': 'us',
-        'espana': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 
-        'inglaterra': 'gb-eng', 'italia': 'it', 'paises bajos': 'nl', 'holanda': 'nl',
-        'belgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk', 'suiza': 'ch', 
-        'austria': 'at', 'hungria': 'hu', 'turquia': 'tr', 'polonia': 'pl',
-        'escocia': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
-        'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 
-        'ecuador': 'ec', 'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'peru': 'pe',
-        'panama': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
-        'marruecos': 'ma', 'senegal': 'sn', 'tunez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
-        'nigeria': 'ng', 'camerun': 'cm', 'ghana': 'gh', 'costa de marfil': 'ci',
-        'japon': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'iran': 'ir'
     };
     if (name.includes('/')) return 'un';
     return codes[name] || 'un'; 
