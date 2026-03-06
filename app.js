@@ -64,28 +64,16 @@ const getIso = (t) => {
         'marruecos': 'ma', 'senegal': 'sn', 'tunez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
         'nigeria': 'ng', 'camerun': 'cm', 'ghana': 'gh', 'costa de marfil': 'ci',
         'japon': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'iran': 'ir',
-        // --- NUEVOS PAÍSES AÑADIDOS ---
-        'sudafrica': 'za','republica de corea': 'kr',
-        'corea del sur': 'kr',
-        'catar': 'qa',
-        'qatar': 'qa',
-        'haiti': 'ht',
-        'curazao': 'cw',
-        'cabo verde': 'cv',
-        'arabia saudi': 'sa',
-        'arabia saudita': 'sa',
-        'nueva zelanda': 'nz',
-        'jordania': 'jo',
-        'noruega': 'no',
-        'uzbekistan': 'uz',
-        'ghana': 'gh',
-        'china': 'cn'
+        'sudafrica': 'za','republica de corea': 'kr', 'corea del sur': 'kr', 'catar': 'qa',
+        'qatar': 'qa', 'haiti': 'ht', 'curazao': 'cw', 'cabo verde': 'cv', 'arabia saudi': 'sa',
+        'arabia saudita': 'sa', 'nueva zelanda': 'nz', 'jordania': 'jo', 'noruega': 'no',
+        'uzbekistan': 'uz', 'ghana': 'gh', 'china': 'cn'
     };
     if (name.includes('/')) return 'un';
     return codes[name] || 'un'; 
 };
 
-// 4. CARGAR PARTIDOS Y BANDERAS
+// 4. CARGAR PARTIDOS Y BANDERAS (POST-LOGIN)
 async function loadMatches(fase) {
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', currentUser.id);
@@ -100,12 +88,12 @@ async function loadMatches(fase) {
 
         container.innerHTML += `
             <div class="match-card ${isLocked ? 'locked' : ''}">
-                <div class="team" style="display:flex; align-items:center; flex:1; justify-content:flex-end; text-align:right">
+                <div class="team">
                     ${m.equipo_a} <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
                 </div>
                 <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${isLocked ? 'disabled' : ''}>
                 <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${isLocked ? 'disabled' : ''}>
-                <div class="team" style="display:flex; align-items:center; flex:1; text-align:left">
+                <div class="team">
                     <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png"> ${m.equipo_b}
                 </div>
             </div>
@@ -115,7 +103,7 @@ async function loadMatches(fase) {
 
 // 5. GUARDAR PRONÓSTICOS
 async function savePredictions() {
-    const confirmacion = confirm("⚠️ ¿Estás seguro de guardar tus pronósticos?\n\nUna vez guardados, NO podrás modificarlos ni corregirlos.");
+    const confirmacion = confirm("⚠️ ¿Estás seguro de guardar?\n\nNo podrás modificar después.");
     if (!confirmacion) return; 
 
     const cards = document.querySelectorAll('.match-card');
@@ -140,19 +128,12 @@ async function savePredictions() {
         }
     });
 
-    if (dataToSave.length === 0) {
-        alert("No hay resultados nuevos para guardar.");
-        return;
-    }
+    if (dataToSave.length === 0) return alert("Nada nuevo que guardar.");
 
     const { error } = await _sb.from('pronosticos').upsert(dataToSave, { onConflict: 'perfil_id, partido_id' });
     
-    if (error) {
-        alert("Error: " + error.message);
-    } else {
-        alert("✅ ¡Guardado y bloqueado!");
-        loadMatches(currentFase);
-    }
+    if (error) alert("Error: " + error.message);
+    else { alert("✅ ¡Guardado!"); loadMatches(currentFase); }
 }
 
 // 6. CARGAR RANKING
@@ -163,7 +144,7 @@ async function loadRanking() {
 
     data.forEach((u, i) => {
         let medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
-        const isMe = u.id === currentUser.id ? 'class="me"' : '';
+        const isMe = currentUser && u.id === currentUser.id ? 'class="me"' : '';
         body.innerHTML += `
             <tr ${isMe}>
                 <td class="medal">${medal}</td>
@@ -173,42 +154,37 @@ async function loadRanking() {
         `;
     });
 }
+
+// 7. CARGAR VISTA PREVIA (LA CARTELERA ESTILO FIFA)
 async function loadPreview() {
-    console.log("Iniciando carga de cartelera...");
-    // Buscamos partidos cuya fecha sea mayor o igual a HOY
+    const container = document.getElementById('preview-list');
+    
     const { data: matches, error } = await _sb
         .from('partidos')
         .select('equipo_a, equipo_b, fecha')
-        .gte('fecha', new Date().toISOString()) 
         .order('fecha', {ascending: true})
-        .limit(5);
+        .limit(6);
 
-    const container = document.getElementById('preview-list');
-    
     if (error) {
-        console.error("Error Supabase:", error);
-        container.innerHTML = "Error al conectar.";
-        return;
-    }
-
-    if (!matches || matches.length === 0) {
-        container.innerHTML = "No hay partidos próximos.";
+        container.innerHTML = `<div style="color:red">Error de conexión</div>`;
         return;
     }
 
     container.innerHTML = '';
     matches.forEach(m => {
         const d = new Date(m.fecha);
-        // Formato local (México/Mérida/Etc)
-        const fecha = d.toLocaleDateString([], {day:'2-digit', month:'short'});
-        const hora = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        const fechaStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
+        const horaStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
         container.innerHTML += `
-            <div class="preview-item">
-                <div style="font-weight:bold; margin-bottom:5px;">${m.equipo_a} vs ${m.equipo_b}</div>
-                <div style="color:var(--neon-cyan); font-size:12px;">📅 ${fecha} - ⏰ ${hora}</div>
+            <div class="fifa-match-row">
+                <div class="fifa-date">${fechaStr}</div>
+                <div class="fifa-time">${horaStr}</div>
+                <div class="fifa-teams">${m.equipo_a} vs ${m.equipo_b}</div>
             </div>
         `;
     });
 }
 
+// EJECUCIÓN INICIAL AL CARGAR LA PÁGINA
+loadPreview();

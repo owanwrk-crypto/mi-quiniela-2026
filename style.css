@@ -4,17 +4,174 @@
     --neon-cyan: #00f2ff;
     --neon-green: #39ff14;
     --fifa-blue: #020a16;
+    --error-red: #ff4444;
 }
 
+/* 1. BASE Y CUERPO */
 body { 
-    font-family: 'Segoe UI', sans-serif; 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
     background: radial-gradient(circle at top, #001f3f, #020a16); 
     background-attachment: fixed;
     color: white; 
     margin: 0; 
+    overflow-x: hidden;
 }
 
-/* Efecto Cristal en las Tarjetas */
+/* 2. ENCABEZADO Y NAVEGACIÓN */
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    text-align: center;
+    padding: 30px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+header h1 {
+    margin: 10px 0;
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+}
+
+#user-display {
+    display: inline-block;
+    margin: 15px auto;
+    padding: 10px 30px;
+    background: rgba(0, 242, 255, 0.05);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 50px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    animation: glow-pulse 3s infinite;
+}
+
+#user-display span {
+    color: var(--neon-cyan);
+    font-size: 0.8rem;
+    margin-right: 8px;
+    font-weight: 400;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.tab-btn.active {
+    background: var(--neon-cyan);
+    color: var(--fifa-blue);
+    box-shadow: 0 0 20px var(--neon-cyan);
+    border-color: white;
+}
+
+/* 3. PANTALLA DE INICIO (LOGIN + SIDEBAR) */
+.login-page-wrapper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 50px;
+    min-height: 80vh;
+    padding: 40px 20px;
+    flex-wrap: wrap;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    padding: 40px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: fadeIn 1s ease-out;
+}
+
+.sidebar-preview {
+    width: 100%;
+    max-width: 350px;
+    background: rgba(2, 10, 22, 0.7);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: fadeInRight 1s ease-out;
+}
+
+/* 4. CARTELERA ESTILO FIFA */
+.preview-title {
+    font-weight: 800;
+    color: var(--neon-cyan);
+    text-align: center;
+    border-bottom: 2px solid var(--neon-cyan);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.fifa-match-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.3s;
+}
+
+.fifa-match-row:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+.fifa-date {
+    color: #aaa;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.fifa-time {
+    color: var(--neon-green);
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    font-family: monospace;
+}
+
+.fifa-teams {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+}
+
+/* 5. TARJETAS DE PARTIDOS (QUINIELLA) */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
 .match-card {
     background: var(--glass);
     backdrop-filter: blur(10px);
@@ -26,41 +183,47 @@ body {
     align-items: center;
     justify-content: space-between;
     transition: 0.3s;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-.match-card:hover {
+.match-card:hover:not(.locked) {
     border-color: var(--neon-cyan);
-    box-shadow: 0 0 15px var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
 }
 
 .match-card.locked {
-    opacity: 0.6;
-    filter: grayscale(0.5);
-    border-left: 4px solid #ff4444;
+    opacity: 0.7;
+    background: rgba(0,0,0,0.4);
+    border-left: 5px solid var(--error-red);
 }
 
-/* Escudos */
+.team {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
 .flag {
-    width: 40px;
-    height: 30px;
+    width: 35px;
+    height: 25px;
     object-fit: cover;
-    border-radius: 4px;
-    margin: 0 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    border-radius: 3px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
 
-/* Inputs Neón */
+/* 6. INPUTS Y BOTONES */
 .score-box {
     width: 50px;
     height: 50px;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     border: 2px solid var(--glass-border);
     border-radius: 10px;
     color: var(--neon-cyan);
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
     text-align: center;
+    margin: 0 10px;
 }
 
 .score-box:focus {
@@ -69,324 +232,78 @@ body {
     box-shadow: 0 0 10px var(--neon-green);
 }
 
-/* Tabla de Ranking Resaltada */
-.ranking-table tr.me {
-    background: rgba(0, 242, 255, 0.2) !important;
-    border: 2px solid var(--neon-cyan);
-    font-weight: bold;
-}
-
-.medal { font-size: 1.2rem; }
-
-/* Botón Flotante */
-.btn-float {
-    background: linear-gradient(45deg, #00f2ff, #0066ff);
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-}
-/* Estilos para la Pantalla de Inicio Épica */
-.login-container {
-    height: 90vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1000px;
-}
-
-.login-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 40px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 350px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    animation: fadeIn 1s ease-out;
-}
-
-.trophy-icon {
-    font-size: 50px;
-    margin-bottom: 10px;
-    filter: drop-shadow(0 0 10px gold);
-    animation: float 3s ease-in-out infinite;
-}
-
-.login-card h2 {
-    letter-spacing: 3px;
-    color: var(--neon-cyan);
-    margin-bottom: 5px;
-}
-
-.login-card p {
-    font-size: 0.8rem;
-    color: #ccc;
-    margin-bottom: 30px;
-}
-
-.input-group {
-    text-align: left;
-    margin-bottom: 20px;
-}
-
-.input-group label {
-    font-size: 11px;
-    color: var(--neon-cyan);
-    margin-left: 5px;
-    font-weight: bold;
-}
-
-.login-card input {
-    width: 100%;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    box-sizing: border-box; /* Importante para que no se salga del cuadro */
-    transition: 0.3s;
-}
-
-.login-card input:focus {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-    outline: none;
-}
-
 .btn-login {
     width: 100%;
     padding: 15px;
     background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     color: white;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 1px;
     transition: 0.3s;
 }
 
-.btn-login:hover {
-    transform: translateY(-3px);
+.btn-float {
+    background: linear-gradient(45deg, #00f2ff, #0066ff);
     box-shadow: 0 5px 20px rgba(0, 242, 255, 0.4);
-}
-
-.login-footer {
-    margin-top: 20px;
-    font-size: 10px;
-    color: #555;
-}
-
-/* Animaciones */
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-/* FORZAR CENTRADO DE TODO EL ENCABEZADO */
-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centra horizontalmente */
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
-    width: 100%;
-}
-
-header h1 {
-    margin: 10px 0;
-    font-size: 1.8rem;
+    border: none;
+    padding: 15px 35px;
+    border-radius: 50px;
     color: white;
-}
-
-/* Estilo épico para el nombre del jugador en el encabezado */
-#user-display {
-    display: inline-block;
-    margin: 15px auto;
-    padding: 8px 25px;
-    background: rgba(0, 242, 255, 0.05); /* Fondo cian muy sutil */
-    border: 1px solid var(--neon-cyan);
-    border-radius: 50px; /* Forma de cápsula */
-    color: white;
-    font-weight: 900;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3), inset 0 0 10px rgba(0, 242, 255, 0.2);
-    text-shadow: 0 0 10px var(--neon-cyan);
-    animation: glow-pulse 3s infinite;
-}
-
-/* El prefijo "JUGADOR:" lo ponemos en un color distinto para que resalte el nombre */
-#user-display span {
-    color: var(--neon-cyan);
-    font-size: 0.8rem;
-    margin-right: 8px;
-    font-weight: 400;
-    letter-spacing: 1px;
-}
-
-/* Animación de pulso suave para el brillo */
-@keyframes glow-pulse {
-    0% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-    50% { box-shadow: 0 0 25px rgba(0, 242, 255, 0.5); border-color: #ffffff; }
-    100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-}
-
-/* FORZAR CENTRADO DE LAS PESTAÑAS */
-.tabs {
-    display: flex;
-    justify-content: center; /* Esto centra los botones */
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin: 20px 0;
-}
-
-.tab-btn {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 20px;
+    font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
 }
 
-.tab-btn.active {
-    background: #00f2ff; /* Color Neón */
-    color: #020a16;
-    box-shadow: 0 0 10px #00f2ff;
-}
-/* CENTRADO Y ESTILO ÉPICO DEL RANKING */
-#ranking-list {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centra la tabla en la pantalla */
-    width: 100%;
-    margin-top: 20px;
-    animation: fadeIn 0.8s ease-in-out;
-}
-
+/* 7. RANKING */
 .ranking-table {
-    width: 95%;
-    max-width: 500px; /* Tamaño ideal para móvil y PC */
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
     border-collapse: separate;
-    border-spacing: 0 10px; /* Espacio entre filas */
-    margin: 0 auto;
+    border-spacing: 0 8px;
 }
 
-.ranking-table thead th {
-    color: var(--neon-cyan);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    padding: 15px;
-    font-size: 0.8rem;
-    text-align: center;
-}
-
-.ranking-table tbody tr {
+.ranking-table tr {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(5px);
-    transition: 0.3s;
+    border-radius: 10px;
+}
+
+.ranking-table tr.me {
+    background: rgba(0, 242, 255, 0.15) !important;
+    border: 1px solid var(--neon-cyan);
 }
 
 .ranking-table td {
     padding: 15px;
-    text-align: center; /* Centra el contenido de las celdas */
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
 }
 
-/* Redondear las esquinas de las filas */
-.ranking-table td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255, 255, 255, 0.1); }
-.ranking-table td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255, 255, 255, 0.1); }
-
-/* Efecto para los Ganadores */
-.ranking-table tr:nth-child(1) { box-shadow: 0 0 15px rgba(255, 215);}
-.preview-container {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px dashed rgba(0, 242, 255, 0.2);
+/* 8. ANIMACIONES */
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(0, 242, 255, 0.6); border-color: white; }
 }
 
-.preview-title {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--neon-cyan);
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.preview-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    margin-bottom: 5px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding-bottom: 3px;
-}
-
-.preview-item:last-child { border: none; }
-
-.preview-date {
-    color: var(--neon-green);
-    font-family: monospace;
-}
-/* Contenedor principal de la página de inicio */
-.login-page-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 40px; /* Espacio entre el login y la cartelera */
-    min-height: 100vh;
-    padding: 20px;
-    flex-wrap: wrap; /* Para que en el celular se ponga uno abajo del otro */
-}
-
-/* Ajuste de la cartelera derecha */
-.sidebar-preview {
-    width: 320px;
-    animation: fadeInRight 1s ease-out;
-}
-
-.preview-container {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(0, 242, 255, 0.3);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.preview-item {
-    background: rgba(0,0,0,0.2);
-    margin-bottom: 10px;
-    padding: 12px;
-    border-radius: 10px;
-    border-left: 3px solid var(--neon-cyan);
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInRight {
     from { opacity: 0; transform: translateX(30px); }
     to { opacity: 1; transform: translateX(0); }
+}
+
+/* RESPONSIVO MÓVIL */
+@media (max-width: 768px) {
+    .login-page-wrapper { gap: 20px; padding: 20px; }
+    .sidebar-preview { max-width: 100%; }
+    header h1 { font-size: 1.4rem; }
+    .score-box { width: 45px; height: 45px; }
 }
