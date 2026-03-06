@@ -124,13 +124,47 @@ async function loadRanking() {
     const saveBtn = document.getElementById('save-btn');
     const body = document.getElementById('ranking-body');
 
+    // Cambiamos visibilidad
     list.style.display = 'none';
     saveBtn.style.display = 'none';
     ranking.style.display = 'block';
-    body.innerHTML = '<tr><td colspan="3">Calculando posiciones...</td></tr>';
+    
+    body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-cyan)">ACCEDIENDO A LA BASE DE DATOS...</td></tr>';
 
-    const { data: perfiles } = await _sb.from('perfiles').select('nombre, puntos').order('puntos', { ascending: false });
-    body.innerHTML = perfiles.map((p, i) => `<tr><td>${i+1}</td><td style="color:var(--neon-cyan)">${p.nombre}</td><td>${p.puntos || 0}</td></tr>`).join('');
+    try {
+        // Consultamos la tabla 'perfiles'
+        const { data: perfiles, error } = await _sb
+            .from('perfiles')
+            .select('nombre, puntos')
+            .order('puntos', { ascending: false });
+
+        if (error) throw error;
+
+        if (!perfiles || perfiles.length === 0) {
+            body.innerHTML = '<tr><td colspan="3">NO HAY JUGADORES REGISTRADOS</td></tr>';
+            return;
+        }
+
+        // Generamos las filas con estilo épico
+        body.innerHTML = perfiles.map((p, i) => {
+            let medalla = i + 1;
+            if(i === 0) medalla = '🥇';
+            if(i === 1) medalla = '🥈';
+            if(i === 2) medalla = '🥉';
+            
+            return `
+                <tr>
+                    <td style="font-family:'Orbitron'; font-weight:bold;">${medalla}</td>
+                    <td style="color:var(--neon-cyan); text-align:left; padding-left:20px;">${p.nombre.toUpperCase()}</td>
+                    <td style="font-weight:bold; color:var(--neon-green)">${p.puntos || 0}</td>
+                </tr>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Error en Ranking:", err);
+        body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-red)">ERROR DE CONEXIÓN AL RANKING</td></tr>';
+    }
 }
 
 async function loadPreview() {
