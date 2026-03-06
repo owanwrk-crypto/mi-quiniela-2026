@@ -173,3 +173,42 @@ async function loadRanking() {
         `;
     });
 }
+async function loadPreview() {
+    console.log("Iniciando carga de cartelera...");
+    // Buscamos partidos cuya fecha sea mayor o igual a HOY
+    const { data: matches, error } = await _sb
+        .from('partidos')
+        .select('equipo_a, equipo_b, fecha')
+        .gte('fecha', new Date().toISOString()) 
+        .order('fecha', {ascending: true})
+        .limit(5);
+
+    const container = document.getElementById('preview-list');
+    
+    if (error) {
+        console.error("Error Supabase:", error);
+        container.innerHTML = "Error al conectar.";
+        return;
+    }
+
+    if (!matches || matches.length === 0) {
+        container.innerHTML = "No hay partidos próximos.";
+        return;
+    }
+
+    container.innerHTML = '';
+    matches.forEach(m => {
+        const d = new Date(m.fecha);
+        // Formato local (México/Mérida/Etc)
+        const fecha = d.toLocaleDateString([], {day:'2-digit', month:'short'});
+        const hora = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+        container.innerHTML += `
+            <div class="preview-item">
+                <div style="font-weight:bold; margin-bottom:5px;">${m.equipo_a} vs ${m.equipo_b}</div>
+                <div style="color:var(--neon-cyan); font-size:12px;">📅 ${fecha} - ⏰ ${hora}</div>
+            </div>
+        `;
+    });
+}
+

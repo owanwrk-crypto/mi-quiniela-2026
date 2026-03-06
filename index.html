@@ -13,15 +13,35 @@
         <p id="user-display">Bienvenido a la Quiniela</p>
     </header>
 
-    <div id="login-section" class="login-container">
-        <div class="login-card">
-            <div class="trophy-icon">🏆</div>
-            <h2>MUNDIAL 2026</h2>
-            
-            <div id="next-matches-preview" class="preview-container">
-                <p class="preview-title">PRÓXIMOS ENCUENTROS</p>
-                <div id="preview-list">Cargando horarios...</div>
-            </div>
+ <div id="login-section" class="login-page-wrapper">
+    
+    <div class="login-card">
+        <div class="trophy-icon">🏆</div>
+        <h2>MUNDIAL 2026</h2>
+        <p>Ingresa tus credenciales</p>
+        
+        <div class="input-group">
+            <label>USUARIO</label>
+            <input type="text" id="login-name" placeholder="Ej: oswaldo">
+        </div>
+        
+        <div class="input-group">
+            <label>PIN DE ACCESO</label>
+            <input type="password" id="login-pin" placeholder="****">
+        </div>
+        
+        <button onclick="handleLogin()" class="btn-login">INICIAR SESIÓN</button>
+        <div class="login-footer">Solo personal autorizado</div>
+    </div>
+
+    <div class="sidebar-preview">
+        <div id="next-matches-preview" class="preview-container">
+            <p class="preview-title">📡 EN VIVO / PRÓXIMOS</p>
+            <div id="preview-list">Buscando partidos...</div>
+        </div>
+    </div>
+
+</div>
 
             <p>Ingresa para participar</p>
             

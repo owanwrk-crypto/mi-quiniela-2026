@@ -352,3 +352,41 @@ header h1 {
     color: var(--neon-green);
     font-family: monospace;
 }
+/* Contenedor principal de la página de inicio */
+.login-page-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px; /* Espacio entre el login y la cartelera */
+    min-height: 100vh;
+    padding: 20px;
+    flex-wrap: wrap; /* Para que en el celular se ponga uno abajo del otro */
+}
+
+/* Ajuste de la cartelera derecha */
+.sidebar-preview {
+    width: 320px;
+    animation: fadeInRight 1s ease-out;
+}
+
+.preview-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.preview-item {
+    background: rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 3px solid var(--neon-cyan);
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
