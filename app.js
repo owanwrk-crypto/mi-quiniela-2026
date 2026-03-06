@@ -47,57 +47,45 @@ async function loadMatches(fase) {
     bracket.style.display = 'none';
     saveBtn.style.display = 'block';
     container.style.display = 'block';
-    container.innerHTML = '<p style="text-align:center; color: var(--neon-cyan)">Sincronizando satélites...</p>';
+    container.innerHTML = '<p style="text-align:center">Cargando partidos...</p>';
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
     container.innerHTML = '';
     const ahora = new Date();
-    matches.forEach(m => {
+    matches?.forEach(m => {
         const bet = myBets?.find(b => b.partido_id === m.id);
-        const horaLimpia = m.hora ? m.hora.replace(' ', '') : "12:00";
-        const fechaPartido = new Date(`${m.fecha}T${horaLimpia}:00`);
-        const tiempoCerrado = (fechaPartido - ahora) < 3600000;
         const yaAposto = bet !== undefined;
-        const bloqueado = yaAposto || tiempoCerrado;
         container.innerHTML += `
             <div class="match-card">
-                <div class="team left">
-                    <span>${m.equipo_a}</span>
-                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
-                </div>
+                <div class="team left"><span>${m.equipo_a}</span><img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png"></div>
                 <div class="score-container">
-                    <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
-                    <span style="font-weight:bold; color:#444">VS</span>
-                    <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
+                    <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${yaAposto ? 'disabled' : ''}>
+                    <span>VS</span>
+                    <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${yaAposto ? 'disabled' : ''}>
                 </div>
-                <div class="team right">
-                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png">
-                    <span>${m.equipo_b}</span>
-                </div>
-                <div class="status-label">${yaAposto ? '<span class="status-ok">✓ PRONÓSTICO ASEGURADO</span>' : ''}</div>
+                <div class="team right"><img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png"><span>${m.equipo_b}</span></div>
             </div>`;
     });
 }
 
 async function savePredictions() {
     const inputs = document.querySelectorAll('.score-box:not(:disabled)');
-    if (inputs.length === 0) return alert("No hay pronósticos nuevos para guardar o el tiempo expiró.");
+    if (inputs.length === 0) return alert("Nada que guardar.");
     const predictions = [];
     const idsProcessed = new Set();
     inputs.forEach(input => {
         const id = input.id.split('-')[1];
         if (!idsProcessed.has(id)) {
-            const golesA = document.getElementById(`a-${id}`).value;
-            const golesB = document.getElementById(`b-${id}`).value;
-            if (golesA !== '' && golesB !== '') {
-                predictions.push({ perfil_id: window.currentUser.id, partido_id: id, goles_a_user: parseInt(golesA), goles_b_user: parseInt(golesB) });
+            const gA = document.getElementById(`a-${id}`).value;
+            const gB = document.getElementById(`b-${id}`).value;
+            if (gA !== '' && gB !== '') {
+                predictions.push({ perfil_id: window.currentUser.id, partido_id: id, goles_a_user: parseInt(gA), goles_b_user: parseInt(gB) });
                 idsProcessed.add(id);
             }
         }
     });
     const { error } = await _sb.from('pronosticos').insert(predictions);
-    if (error) alert("Error al guardar.");
-    else { alert("¡Pronósticos guardados!"); loadMatches(currentFase); }
+    if (error) alert("Error."); else { alert("Guardado!"); loadMatches(currentFase); }
 }
 
 function showTab(fase) {
@@ -108,29 +96,26 @@ function showTab(fase) {
     const rankingList = document.getElementById('ranking-list');
     const saveBtn = document.getElementById('save-btn');
     if (fase === 'Bracket') {
-        matchList.style.display = 'none';
-        rankingList.style.display = 'none';
-        saveBtn.style.display = 'none';
-        bracketView.style.display = 'block';
+        matchList.style.display = 'none'; rankingList.style.display = 'none'; saveBtn.style.display = 'none'; bracketView.style.display = 'block';
         renderBracket();
     } else if (fase === 'Ranking') {
-        bracketView.style.display = 'none';
+        matchList.style.display = 'none'; bracketView.style.display = 'none'; saveBtn.style.display = 'none'; rankingList.style.display = 'block';
         loadRanking();
     } else {
-        bracketView.style.display = 'none';
+        bracketView.style.display = 'none'; rankingList.style.display = 'none'; saveBtn.style.display = 'block'; matchList.style.display = 'block';
         loadMatches(fase);
     }
 }
 
 async function renderBracket() {
     const container = document.getElementById('groups-summary');
-    container.innerHTML = '<p style="text-align:center">Analizando datos...</p>';
+    container.innerHTML = 'Calculando...';
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', 'Grupos');
     const { data: bets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
     const grupos = {};
-    matches.forEach(m => { if (!grupos[m.grupo]) grupos[m.grupo] = []; grupos[m.grupo].push(m); });
+    matches?.forEach(m => { if (!grupos[m.grupo]) grupos[m.grupo] = []; grupos[m.grupo].push(m); });
     container.innerHTML = '';
-    const clasificados = {};
+    const lideres = {};
     Object.keys(grupos).sort().forEach(g => {
         const s = {};
         grupos[g].forEach(m => {
@@ -144,34 +129,24 @@ async function renderBracket() {
             }
         });
         const tabla = Object.entries(s).sort((a, b) => b[1].pts - a[1].pts || b[1].dg - a[1].dg);
-        clasificados[g] = { p: tabla[0]?.[0] || '?', s: tabla[1]?.[0] || '?' };
-        container.innerHTML += `
-            <div class="group-card">
-                <h3>GRUPO ${g}</h3>
-                <table class="mini-table">
-                    ${tabla.map((t, i) => `<tr><td>${i+1}</td><td>${t[0].toUpperCase()}</td><td>${t[1].pts}</td></tr>`).join('')}
-                </table>
-            </div>`;
+        lideres[g] = { p: tabla[0]?.[0] || '?', s: tabla[1]?.[0] || '?' };
+        container.innerHTML += `<div class="group-card"><h3>GRUPO ${g}</h3><table class="mini-table">${tabla.map((t, i) => `<tr><td>${i+1}</td><td>${t[0].toUpperCase()}</td><td>${t[1].pts}</td></tr>`).join('')}</table></div>`;
     });
-    // Llenar slots de ejemplo
-    document.getElementById('oct-1').innerHTML = `<div class="team-row"><span>${clasificados['A']?.p}</span><span>-</span></div><div class="team-row"><span>${clasificados['B']?.s}</span><span>-</span></div>`;
-    document.getElementById('oct-2').innerHTML = `<div class="team-row"><span>${clasificados['C']?.p}</span><span>-</span></div><div class="team-row"><span>${clasificados['D']?.s}</span><span>-</span></div>`;
+    const fill = (id, t1, t2) => { document.getElementById(id).innerHTML = `<div class="team-row"><span>${t1}</span><span>-</span></div><div class="team-row"><span>${t2}</span><span>-</span></div>`; };
+    fill('oct-1', lideres['A']?.p, lideres['B']?.s); fill('oct-2', lideres['C']?.p, lideres['D']?.s);
+    fill('oct-3', lideres['E']?.p, lideres['F']?.s); fill('oct-4', lideres['G']?.p, lideres['H']?.s);
+    fill('oct-5', lideres['B']?.p, lideres['A']?.s); fill('oct-6', lideres['D']?.p, lideres['C']?.s);
+    fill('oct-7', lideres['F']?.p, lideres['E']?.s); fill('oct-8', lideres['H']?.p, lideres['G']?.s);
     document.getElementById('final-match').innerHTML = `<div class="team-row"><span>FINALISTA 1</span></div><div class="team-row"><span>FINALISTA 2</span></div>`;
 }
 
 async function loadRanking() {
-    const list = document.getElementById('match-list');
-    const ranking = document.getElementById('ranking-list');
-    const bracket = document.getElementById('bracket-view');
-    const saveBtn = document.getElementById('save-btn');
-    const body = document.getElementById('ranking-body');
-    list.style.display = 'none'; bracket.style.display = 'none'; saveBtn.style.display = 'none'; ranking.style.display = 'block';
     const { data: perfiles } = await _sb.from('perfiles').select('nombre, puntos_totales').order('puntos_totales', { ascending: false });
-    body.innerHTML = perfiles.map((p, i) => `<tr><td>${i+1}</td><td style="color:var(--neon-cyan)">${p.nombre.toUpperCase()}</td><td style="color:var(--neon-green)">${p.puntos_totales || 0}</td></tr>`).join('');
+    document.getElementById('ranking-body').innerHTML = perfiles?.map((p, i) => `<tr><td>${i+1}</td><td>${p.nombre.toUpperCase()}</td><td>${p.puntos_totales || 0}</td></tr>`).join('') || '';
 }
 
 async function loadPreview() {
     const { data } = await _sb.from('partidos').select('*').eq('fase', 'Grupos').limit(3);
     const container = document.getElementById('preview-list');
-    if(data && container) container.innerHTML = data.map(m => `<div style="font-size:11px; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:5px;">${m.equipo_a} vs ${m.equipo_b} <br> <span style="color:var(--neon-purple)">${m.fecha}</span></div>`).join('');
+    if(data && container) container.innerHTML = data.map(m => `<div style="font-size:10px; margin-bottom:5px;">${m.equipo_a} vs ${m.equipo_b}</div>`).join('');
 }
