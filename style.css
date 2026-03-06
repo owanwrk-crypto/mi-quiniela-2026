@@ -57,7 +57,12 @@ input {
     text-align: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-.fifa-time { color: var(--neon-green); font-weight: bold; font-size: 1.2rem; }
+.fifa-time {
+    color: var(--neon-green); /* Ese verde neón que ya tienes */
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+}
 .fifa-date { font-size: 0.8rem; color: #aaa; text-transform: uppercase; }
 
 /* Estilos para el juego */

@@ -1,16 +1,18 @@
 const URL_SB = 'https://hamqbcccmefflpkurouu.supabase.co';
 const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
+// Asegúrate de tener tus constantes URL_SB y KEY_SB definidas arriba
+// Asegúrate de tener tus constantes URL_SB y KEY_SB definidas arriba
 const _sb = supabase.createClient(URL_SB, KEY_SB);
 
 async function loadPreview() {
     const container = document.getElementById('preview-list');
-    console.log("Iniciando carga de partidos...");
+    console.log("Iniciando carga de partidos con columna hora...");
 
     try {
-        // Intentamos traer los datos
+        // 1. Agregamos 'hora' a la selección de columnas
         const { data: matches, error } = await _sb
             .from('partidos')
-            .select('equipo_a, equipo_b, fecha')
+            .select('equipo_a, equipo_b, fecha, hora') 
             .order('fecha', { ascending: true })
             .limit(6);
 
@@ -29,9 +31,15 @@ async function loadPreview() {
         // Si hay datos, limpiamos y llenamos
         container.innerHTML = '';
         matches.forEach(m => {
-            const d = new Date(m.fecha);
+            /* AJUSTE DE FECHA: 
+               Si 'fecha' es "2026-06-11", al añadirle "T12:00:00" nos aseguramos 
+               de que JS no la mueva de día por temas de zona horaria.
+            */
+            const d = new Date(m.fecha + "T12:00:00");
             const fechaTxt = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
-            const horaTxt = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            // 2. Priorizamos tu nueva columna 'hora'. Si está vacía, ponemos "TBD"
+            const horaTxt = m.hora || "TBD";
 
             container.innerHTML += `
                 <div class="fifa-match-row">
@@ -41,7 +49,7 @@ async function loadPreview() {
                 </div>
             `;
         });
-        console.log("Partidos cargados correctamente:", matches);
+        console.log("Partidos con hora cargados correctamente:", matches);
 
     } catch (err) {
         console.error("Error inesperado:", err);
@@ -50,20 +58,42 @@ async function loadPreview() {
 }
 
 async function handleLogin() {
-    const name = document.getElementById('login-name').value.toLowerCase().trim();
-    const pin = document.getElementById('login-pin').value;
+    const nameInput = document.getElementById('login-name');
+    const pinInput = document.getElementById('login-pin');
 
-    const { data, error } = await _sb.from('perfiles').select('*').eq('nombre', name).eq('pin', pin).single();
+    if (!nameInput || !pinInput) return;
+
+    const name = nameInput.value.toLowerCase().trim();
+    const pin = pinInput.value;
+
+    if (!name || !pin) {
+        alert("Por favor, ingresa usuario y PIN");
+        return;
+    }
+
+    const { data, error } = await _sb
+        .from('perfiles')
+        .select('*')
+        .eq('nombre', name)
+        .eq('pin', pin)
+        .single();
 
     if (data) {
+        // Guardamos el usuario globalmente para usarlo en las apuestas
+        window.currentUser = data; 
+        
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('main-section').style.display = 'block';
-        document.getElementById('user-display').innerText = "JUGADOR: " + data.nombre.toUpperCase();
-        // Aquí podrías llamar a una función para cargar los partidos del usuario
+        
+        const display = document.getElementById('user-display');
+        if (display) display.innerText = "JUGADOR: " + data.nombre.toUpperCase();
+        
+        // Aquí puedes llamar a loadMatches('Grupos') cuando tengas esa función lista
+        console.log("Login exitoso para:", data.nombre);
     } else {
-        alert("Acceso denegado");
+        alert("Acceso denegado: Usuario o PIN incorrectos");
     }
 }
 
-// Ejecutar al cargar
+// Ejecutar al cargar la página
 loadPreview();
