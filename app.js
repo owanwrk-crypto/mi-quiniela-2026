@@ -3,32 +3,53 @@ const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
 const _sb = supabase.createClient(URL_SB, KEY_SB);
 
 let currentFase = 'Grupos';
+window.currentUser = null;
 
 document.addEventListener('DOMContentLoaded', () => { loadPreview(); });
 
-// DICCIONARIO DE BANDERAS AMPLIADO
 const getIso = (equipo) => {
     const nombres = {
         'mexico': 'mx', 'argentina': 'ar', 'brasil': 'br', 'espana': 'es',
-        'francia': 'fr', 'alemania': 'de', 'usa': 'us', 'estados unidos': 'us',
-        'canada': 'ca', 'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng',
-        'holanda': 'nl', 'paises bajos': 'nl', 'uruguay': 'uy', 'colombia': 'co',
-        'paraguay': 'py', 'australia': 'au', 'marruecos': 'ma', 'sudafrica': 'za',
-        'corea del sur': 'kr', 'republica de corea': 'kr', 'japon': 'jp',
-        'turquia': 'tr', 'rumania': 'ro', 'eslovaquia': 'sk', 'kosovo': 'xk'
+        'francia': 'fr', 'alemania': 'de', 'usa': 'us', 'canada': 'ca',
+        'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng', 'japon': 'jp'
     };
-    // Limpieza de texto para buscar coincidencias
     const n = equipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    
-    // Si el nombre es largo (como "Italia/Nigeria..."), buscamos la primera palabra
     const primeraPalabra = n.split('/')[0].split(' ')[0];
-    
     return nombres[n] || nombres[primeraPalabra] || 'un';
 };
 
+async function handleLogin() {
+    const name = document.getElementById('login-name').value.trim();
+    const pin = document.getElementById('login-pin').value.trim();
+    const btn = document.getElementById('login-btn');
+
+    if(!name || !pin) return alert("Completa los datos");
+    btn.innerText = "VERIFICANDO...";
+
+    const { data: user, error } = await _sb.from('perfiles').select('*').eq('nombre', name).eq('pin', pin).single();
+
+    if (error || !user) {
+        alert("Usuario o PIN incorrectos");
+        btn.innerText = "ENTRAR A JUGAR";
+    } else {
+        window.currentUser = user;
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('main-section').style.display = 'block';
+        document.getElementById('user-display').innerText = `JUGADOR: ${user.nombre.toUpperCase()}`;
+        loadMatches('Grupos');
+    }
+}
+
 async function loadMatches(fase) {
+    currentFase = fase;
     const container = document.getElementById('match-list');
-    container.innerHTML = '<p style="text-align:center">Cargando...</p>';
+    const ranking = document.getElementById('ranking-list');
+    const saveBtn = document.getElementById('save-btn');
+
+    ranking.style.display = 'none';
+    saveBtn.style.display = 'block';
+    container.style.display = 'block';
+    container.innerHTML = '<p style="text-align:center; color: var(--neon-cyan)">Sincronizando satélites...</p>';
 
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
@@ -41,32 +62,84 @@ async function loadMatches(fase) {
         const horaLimpia = m.hora ? m.hora.replace(' ', '') : "12:00";
         const fechaPartido = new Date(`${m.fecha}T${horaLimpia}:00`);
         const tiempoCerrado = (fechaPartido - ahora) < 3600000;
-        
         const yaAposto = bet !== undefined;
         const bloqueado = yaAposto || tiempoCerrado;
 
         container.innerHTML += `
-            <div class="match-card ${bloqueado ? 'locked' : ''}">
+            <div class="match-card">
                 <div class="team left">
                     <span>${m.equipo_a}</span>
                     <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
                 </div>
                 <div class="score-container">
-                    <input type="number" class="score-box" id="a-${m.id}" 
-                        value="${bet?.goles_a_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
-                    <span class="vs-divider">-</span>
-                    <input type="number" class="score-box" id="b-${m.id}" 
-                        value="${bet?.goles_b_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
+                    <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
+                    <span style="font-weight:bold; color:#444">VS</span>
+                    <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
                 </div>
                 <div class="team right">
                     <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png">
                     <span>${m.equipo_b}</span>
                 </div>
-                <div class="status-label">
-                    ${yaAposto ? '<span class="status-ok">✓ PRONÓSTICO REGISTRADO</span>' : ''}
-                </div>
+                <div class="status-label">${yaAposto ? '<span class="status-ok">✓ PRONÓSTICO ASEGURADO</span>' : ''}</div>
             </div>`;
     });
 }
 
-// ... Mantén el resto de tus funciones (handleLogin, showTab, savePredictions, loadRanking) igual ...
+async function savePredictions() {
+    const inputs = document.querySelectorAll('.score-box:not(:disabled)');
+    if (inputs.length === 0) return alert("No hay pronósticos nuevos para guardar o el tiempo expiró.");
+
+    const predictions = [];
+    const idsProcessed = new Set();
+
+    inputs.forEach(input => {
+        const id = input.id.split('-')[1];
+        if (!idsProcessed.has(id)) {
+            const golesA = document.getElementById(`a-${id}`).value;
+            const golesB = document.getElementById(`b-${id}`).value;
+            if (golesA !== '' && golesB !== '') {
+                predictions.push({ perfil_id: window.currentUser.id, partido_id: id, goles_a_user: parseInt(golesA), goles_b_user: parseInt(golesB) });
+                idsProcessed.add(id);
+            }
+        }
+    });
+
+    if (predictions.length === 0) return alert("Ingresa resultados válidos.");
+
+    const { error } = await _sb.from('pronosticos').insert(predictions);
+    if (error) alert("Error al guardar.");
+    else { alert("¡Pronósticos guardados!"); loadMatches(currentFase); }
+}
+
+function showTab(fase) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    if (fase === 'Ranking') loadRanking();
+    else loadMatches(fase);
+}
+
+async function loadRanking() {
+    const list = document.getElementById('match-list');
+    const ranking = document.getElementById('ranking-list');
+    const saveBtn = document.getElementById('save-btn');
+    const body = document.getElementById('ranking-body');
+
+    list.style.display = 'none';
+    saveBtn.style.display = 'none';
+    ranking.style.display = 'block';
+    body.innerHTML = '<tr><td colspan="3">Calculando posiciones...</td></tr>';
+
+    const { data: perfiles } = await _sb.from('perfiles').select('nombre, puntos').order('puntos', { ascending: false });
+    body.innerHTML = perfiles.map((p, i) => `<tr><td>${i+1}</td><td style="color:var(--neon-cyan)">${p.nombre}</td><td>${p.puntos || 0}</td></tr>`).join('');
+}
+
+async function loadPreview() {
+    const { data } = await _sb.from('partidos').select('*').eq('fase', 'Grupos').limit(3);
+    const container = document.getElementById('preview-list');
+    if(data) {
+        container.innerHTML = data.map(m => `
+            <div style="font-size:11px; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:5px;">
+                ${m.equipo_a} vs ${m.equipo_b} <br> <span style="color:var(--neon-purple)">${m.fecha}</span>
+            </div>`).join('');
+    }
+}

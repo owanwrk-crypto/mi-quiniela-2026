@@ -9,16 +9,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
     <header>
-        <h1 style="font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); margin: 0;">MUNDIAL 2026</h1>
-        <p style="color: #aaa; letter-spacing: 2px;">QUINIELA OFICIAL</p>
+        <h1>MUNDIAL 2026</h1>
+        <p class="subtitle">SISTEMA OFICIAL DE PRONÓSTICOS</p>
     </header>
 
     <div id="login-section">
         <div class="login-page-wrapper">
             <div class="login-card">
-                <h2 style="color: white; margin-bottom: 30px;">ACCESO JUGADOR</h2>
+                <h2>ACCESO JUGADOR</h2>
                 <div class="input-group">
                     <label>Nombre de Usuario</label>
                     <input type="text" id="login-name" placeholder="Ej: Juan Perez">
@@ -27,58 +26,51 @@
                     <label>PIN de Seguridad</label>
                     <input type="password" id="login-pin" placeholder="****" maxlength="4">
                 </div>
-                <button class="btn-login" onclick="handleLogin()">ENTRAR A JUGAR</button>
+                <button class="btn-login" id="login-btn" onclick="handleLogin()">ENTRAR A JUGAR</button>
             </div>
-
             <div class="sidebar-preview">
-                <h3 style="text-align: center; font-size: 14px; color: var(--neon-cyan);">PRÓXIMOS PARTIDOS</h3>
-                <div id="preview-list">
-                    </div>
+                <h3>PRÓXIMOS PARTIDOS</h3>
+                <div id="preview-list"></div>
             </div>
         </div>
     </div>
 
     <div id="main-section" style="display: none;">
         <div class="container">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 4px solid var(--neon-green);">
-                <div id="user-display" style="font-weight: bold; color: var(--neon-green);">JUGADOR: ---</div>
-                <button onclick="location.reload()" style="background: none; border: 1px solid #ff4444; color: #ff4444; cursor: pointer; border-radius: 5px; padding: 5px 10px; font-size: 12px; font-weight: bold;">SALIR</button>
+            <div class="user-bar">
+                <div id="user-display">JUGADOR: ---</div>
+                <button class="btn-exit" onclick="location.reload()">SALIR</button>
             </div>
 
-            <div class="tabs-container" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
+            <div class="tabs-container">
                 <button class="tab-btn active" onclick="showTab('Grupos')">GRUPOS</button>
                 <button class="tab-btn" onclick="showTab('Octavos')">OCTAVOS</button>
                 <button class="tab-btn" onclick="showTab('Cuartos')">CUARTOS</button>
                 <button class="tab-btn" onclick="showTab('Semis')">SEMIS</button>
                 <button class="tab-btn" onclick="showTab('Final')">FINAL</button>
-                <button class="tab-btn" onclick="showTab('Ranking')" style="border-color: var(--neon-green); color: var(--neon-green);">🏆 RANKING</button>
+                <button class="tab-btn tab-ranking" onclick="showTab('Ranking')">🏆 RANKING</button>
             </div>
 
-            <div id="match-list">
-                </div>
+            <div id="match-list"></div>
 
             <div id="ranking-list" style="display: none;">
-                <table style="width: 100%; border-collapse: collapse; background: var(--glass); border-radius: 10px; overflow: hidden;">
-                    <thead style="background: rgba(0,242,255,0.2);">
+                <table class="ranking-table">
+                    <thead>
                         <tr>
-                            <th style="padding: 15px; text-align: left; font-family: 'Orbitron'; font-size: 12px;">POS</th>
-                            <th style="padding: 15px; text-align: left; font-family: 'Orbitron'; font-size: 12px;">JUGADOR</th>
-                            <th style="padding: 15px; text-align: center; font-family: 'Orbitron'; font-size: 12px;">PTS</th>
+                            <th>POS</th>
+                            <th>JUGADOR</th>
+                            <th>PTS</th>
                         </tr>
                     </thead>
-                    <tbody id="ranking-body">
-                        </tbody>
+                    <tbody id="ranking-body"></tbody>
                 </table>
             </div>
 
-            <button id="save-btn" onclick="savePredictions()" style="margin-top: 20px;">
+            <button id="save-btn" onclick="savePredictions()">
                 💾 GUARDAR MIS PRONÓSTICOS
             </button>
-
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
