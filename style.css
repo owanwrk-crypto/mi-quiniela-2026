@@ -1,300 +1,166 @@
-/* =========================================
-   VARIABLES Y BASE
-   ========================================= */
+/* RESET GLOBAL: Asegura que el borde no sume tamaño extra al ancho */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 :root {
     --neon-cyan: #00f2ff;
     --neon-green: #39ff14;
     --neon-red: #ff4444;
     --glass: rgba(255, 255, 255, 0.05);
-    --bg-dark: #020a16;
     --bg-gradient: radial-gradient(circle at top, #001f3f, #020a16);
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Rajdhani', sans-serif;
     background: var(--bg-gradient);
     background-attachment: fixed;
     color: white;
-    margin: 0;
     line-height: 1.6;
 }
 
-header {
-    text-align: center;
-    padding: 40px 20px;
-}
-
-/* =========================================
-   LOGIN Y PREVIEW (PÁGINA INICIAL)
-   ========================================= */
-.login-page-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 40px;
-    padding: 20px;
-    flex-wrap: wrap;
-}
-
-.login-card {
-    background: var(--glass);
-    backdrop-filter: blur(15px);
-    padding: 40px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 320px;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-}
-
-.sidebar-preview {
-    width: 320px;
-    background: rgba(2, 10, 22, 0.8);
-    border-radius: 20px;
-    border: 1px solid var(--neon-cyan);
-    padding: 20px;
-}
-
-.input-group {
-    text-align: left;
-    margin-bottom: 20px;
-}
-
-.input-group label {
-    display: block;
-    font-size: 12px;
-    color: var(--neon-cyan);
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-input[type="text"], 
-input[type="password"] { 
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
-    box-sizing: border-box;
-    outline: none;
-    transition: border 0.3s;
-}
-
-input:focus {
-    border-color: var(--neon-cyan);
-}
-
-.btn-login {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
-}
-
-/* =========================================
-   CARTELERA (FIFA MATCH ROWS)
-   ========================================= */
-.fifa-match-row {
-    text-align: center;
-    padding: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.fifa-time {
-    color: var(--neon-green);
-    font-weight: bold;
-    font-size: 1.2rem;
-    text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
-}
-
-.fifa-date {
-    font-size: 0.8rem;
-    color: #aaa;
-    text-transform: uppercase;
-}
-
-.fifa-teams {
-    font-size: 0.9rem;
-    margin-top: 5px;
-    font-weight: 500;
-}
-
-/* =========================================
-   NAVEGACIÓN POR PESTAÑAS (TABS)
-   ========================================= */
-.tabs-container {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    overflow-x: auto;
-    padding-bottom: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--neon-cyan) transparent;
-}
-
-.tab-btn {
-    white-space: nowrap;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 10px 15px;
-    background: var(--glass);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.tab-btn.active {
-    border-color: var(--neon-cyan);
-    background: rgba(0, 242, 255, 0.15);
-    color: var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-}
-
-/* =========================================
-   SISTEMA DE JUEGO (MATCH CARDS)
-   ========================================= */
-.container {
-    max-width: 650px;
-    margin: auto;
-    padding: 20px;
+/* CONTENEDOR DE TARJETAS */
+.container { 
+    max-width: 850px; 
+    margin: auto; 
+    padding: 20px; 
 }
 
 .match-card {
     display: grid;
-    grid-template-columns: 1fr 150px 1fr; /* Espacio ampliado para marcadores sin flechas */
+    /* Ajuste flexible para evitar que nombres largos empujen todo */
+    grid-template-columns: 1fr minmax(160px, 200px) 1fr; 
     align-items: center;
-    background: var(--glass);
+    background: rgba(255, 255, 255, 0.03);
     padding: 20px;
     border-radius: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
     transition: all 0.3s ease;
 }
 
 .team {
     display: flex;
     align-items: center;
-    font-weight: bold;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 14px; /* Un poco más pequeño para nombres largos */
     gap: 12px;
+    text-transform: uppercase;
+    overflow: hidden; /* Evita desbordes */
 }
 
 .team.left { justify-content: flex-end; text-align: right; }
 .team.right { justify-content: flex-start; text-align: left; }
 
 .flag {
-    width: 35px;
-    height: 35px;
+    width: 38px;
+    height: 38px;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0; /* Impide que la bandera se aplaste */
 }
 
-/* MARCADORES LIMPIOS (SIN FLECHAS) */
+/* MARCADORES */
 .score-container {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     justify-content: center;
 }
 
 .score-box {
-    width: 55px !important;
-    height: 50px !important;
-    background: #000 !important;
-    border: 2px solid var(--neon-cyan) !important;
-    border-radius: 8px;
-    color: var(--neon-cyan) !important;
+    width: 60px;
+    height: 60px;
+    background: #000;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    color: var(--neon-cyan);
     text-align: center;
-    font-size: 26px !important;
+    font-size: 26px;
     font-weight: bold;
-    font-family: 'Courier New', monospace;
-    padding: 5px;
-    cursor: pointer;
-    -moz-appearance: textfield; /* Oculta flechas Firefox */
+    line-height: 56px; /* Centrado vertical exacto */
+    outline: none;
+    appearance: none;
+    -moz-appearance: textfield; /* Para Firefox */
 }
 
-/* Oculta flechas Chrome/Safari/Edge */
+/* Quitar flechas de input number */
 .score-box::-webkit-outer-spin-button,
-.score-box::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.score-box::-webkit-inner-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
 }
 
 .score-box:disabled {
-    background: #111 !important;
-    border-color: #444 !important;
-    color: #888 !important;
+    border-color: #333;
+    color: #666;
+    opacity: 0.6;
     cursor: not-allowed;
-    opacity: 0.7;
 }
 
-.vs-divider {
-    color: white;
-    font-weight: bold;
-    opacity: 0.5;
+.vs-divider { 
+    font-weight: bold; 
+    color: #555; 
+    font-size: 18px; 
 }
 
+/* ETIQUETA DE ESTADO */
 .status-label {
     grid-column: 1 / span 3;
     text-align: center;
     font-size: 11px;
+    margin-top: 12px;
     font-weight: bold;
-    margin-top: 10px;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }
 
-.status-ok { color: var(--neon-green); }
-.status-fail { color: var(--neon-red); }
-
-.match-card.locked {
-    background: rgba(0, 0, 0, 0.4);
-    opacity: 0.8;
+.status-ok { 
+    color: var(--neon-green); 
+    text-shadow: 0 0 5px var(--neon-green); 
 }
 
-/* =========================================
-   BOTONES Y RANKING
-   ========================================= */
-#save-btn {
-    display: block;
-    width: 100%;
-    max-width: 300px;
-    margin: 20px auto;
-    padding: 15px;
-    background: var(--neon-green);
-    color: black;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
+/* TABS */
+.tabs-container { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 30px; 
+    overflow-x: auto; 
+    padding: 10px 0; 
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 5px;
     cursor: pointer;
-    box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
-    text-transform: uppercase;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: 0.2s;
 }
 
-#save-btn:hover {
-    filter: brightness(1.2);
-    transform: scale(1.02);
+.tab-btn.active { 
+    border-color: var(--neon-cyan); 
+    background: rgba(0,242,255,0.1); 
+    color: var(--neon-cyan);
 }
 
-tr.me {
-    background: rgba(57, 255, 20, 0.1);
-    border-left: 4px solid var(--neon-green);
+/* RESPONSIVO: Para celulares */
+@media (max-width: 600px) {
+    .match-card {
+        grid-template-columns: 1fr; /* Una sola columna */
+        gap: 15px;
+        text-align: center;
+    }
+    .team.left, .team.right { 
+        justify-content: center; 
+        text-align: center; 
+    }
+    .team.left { order: 1; }
+    .score-container { order: 2; }
+    .team.right { order: 3; }
 }
