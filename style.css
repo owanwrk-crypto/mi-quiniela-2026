@@ -1,309 +1,71 @@
 :root {
-    --glass: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
     --neon-cyan: #00f2ff;
     --neon-green: #39ff14;
-    --fifa-blue: #020a16;
-    --error-red: #ff4444;
+    --glass: rgba(255, 255, 255, 0.05);
 }
 
-/* 1. BASE Y CUERPO */
-body { 
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-    background: radial-gradient(circle at top, #001f3f, #020a16); 
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #001f3f, #020a16);
     background-attachment: fixed;
-    color: white; 
-    margin: 0; 
-    overflow-x: hidden;
+    color: white; margin: 0;
 }
 
-/* 2. ENCABEZADO Y NAVEGACIÓN */
-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    text-align: center;
-    padding: 30px 20px;
-    width: 100%;
-    box-sizing: border-box;
-}
+header { text-align: center; padding: 40px 20px; }
 
-header h1 {
-    margin: 10px 0;
-    font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
-}
-
-#user-display {
-    display: inline-block;
-    margin: 15px auto;
-    padding: 10px 30px;
-    background: rgba(0, 242, 255, 0.05);
-    border: 1px solid var(--neon-cyan);
-    border-radius: 50px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-    animation: glow-pulse 3s infinite;
-}
-
-#user-display span {
-    color: var(--neon-cyan);
-    font-size: 0.8rem;
-    margin-right: 8px;
-    font-weight: 400;
-}
-
-.tabs {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px 0;
-    flex-wrap: wrap;
-}
-
-.tab-btn {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    color: white;
-    padding: 12px 25px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: 0.3s;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.tab-btn.active {
-    background: var(--neon-cyan);
-    color: var(--fifa-blue);
-    box-shadow: 0 0 20px var(--neon-cyan);
-    border-color: white;
-}
-
-/* 3. PANTALLA DE INICIO (LOGIN + SIDEBAR) */
 .login-page-wrapper {
     display: flex;
-    align-items: flex-start;
     justify-content: center;
-    gap: 50px;
-    min-height: 80vh;
-    padding: 40px 20px;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 20px;
     flex-wrap: wrap;
 }
 
 .login-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--glass);
     backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border);
     padding: 40px;
     border-radius: 20px;
-    width: 100%;
-    max-width: 380px;
+    border: 1px solid rgba(255,255,255,0.1);
+    width: 320px;
     text-align: center;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    animation: fadeIn 1s ease-out;
 }
 
 .sidebar-preview {
-    width: 100%;
-    max-width: 350px;
-    background: rgba(2, 10, 22, 0.7);
+    width: 320px;
+    background: rgba(2, 10, 22, 0.8);
     border-radius: 20px;
-    border: 1px solid var(--glass-border);
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    animation: fadeInRight 1s ease-out;
-}
-
-/* 4. CARTELERA ESTILO FIFA */
-.preview-title {
-    font-weight: 800;
-    color: var(--neon-cyan);
-    text-align: center;
-    border-bottom: 2px solid var(--neon-cyan);
-    padding-bottom: 12px;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-}
-
-.fifa-match-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    transition: background 0.3s;
-}
-
-.fifa-match-row:hover {
-    background: rgba(255,255,255,0.02);
-}
-
-.fifa-date {
-    color: #aaa;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-}
-
-.fifa-time {
-    color: var(--neon-green);
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-    font-family: monospace;
-}
-
-.fifa-teams {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: white;
-    text-align: center;
-}
-
-/* 5. TARJETAS DE PARTIDOS (QUINIELLA) */
-.container {
-    max-width: 800px;
-    margin: 0 auto;
+    border: 1px solid var(--neon-cyan);
     padding: 20px;
 }
 
-.match-card {
-    background: var(--glass);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    border-radius: 15px;
-    margin-bottom: 15px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: 0.3s;
-}
-
-.match-card:hover:not(.locked) {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-}
-
-.match-card.locked {
-    opacity: 0.7;
-    background: rgba(0,0,0,0.4);
-    border-left: 5px solid var(--error-red);
-}
-
-.team {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-.flag {
-    width: 35px;
-    height: 25px;
-    object-fit: cover;
-    border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0,0,0,0.5);
-}
-
-/* 6. INPUTS Y BOTONES */
-.score-box {
-    width: 50px;
-    height: 50px;
-    background: rgba(0,0,0,0.6);
-    border: 2px solid var(--glass-border);
-    border-radius: 10px;
-    color: var(--neon-cyan);
-    font-size: 22px;
-    font-weight: bold;
-    text-align: center;
-    margin: 0 10px;
-}
-
-.score-box:focus {
-    border-color: var(--neon-green);
-    outline: none;
-    box-shadow: 0 0 10px var(--neon-green);
+.input-group { text-align: left; margin-bottom: 20px; }
+.input-group label { display: block; font-size: 12px; color: var(--neon-cyan); margin-bottom: 5px; }
+input { 
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
 }
 
 .btn-login {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: 0.3s;
+    width: 100%; padding: 15px; background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
+    border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer;
 }
 
-.btn-float {
-    background: linear-gradient(45deg, #00f2ff, #0066ff);
-    box-shadow: 0 5px 20px rgba(0, 242, 255, 0.4);
-    border: none;
-    padding: 15px 35px;
-    border-radius: 50px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 1000;
+.fifa-match-row {
+    text-align: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* 7. RANKING */
-.ranking-table {
-    width: 100%;
-    max-width: 500px;
-    margin: 20px auto;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-}
+.fifa-time { color: var(--neon-green); font-weight: bold; font-size: 1.2rem; }
+.fifa-date { font-size: 0.8rem; color: #aaa; text-transform: uppercase; }
 
-.ranking-table tr {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+/* Estilos para el juego */
+.container { max-width: 600px; margin: auto; padding: 20px; }
+.match-card { 
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 10px;
 }
-
-.ranking-table tr.me {
-    background: rgba(0, 242, 255, 0.15) !important;
-    border: 1px solid var(--neon-cyan);
-}
-
-.ranking-table td {
-    padding: 15px;
-    text-align: center;
-}
-
-/* 8. ANIMACIONES */
-@keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-    50% { box-shadow: 0 0 25px rgba(0, 242, 255, 0.6); border-color: white; }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInRight {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* RESPONSIVO MÓVIL */
-@media (max-width: 768px) {
-    .login-page-wrapper { gap: 20px; padding: 20px; }
-    .sidebar-preview { max-width: 100%; }
-    header h1 { font-size: 1.4rem; }
-    .score-box { width: 45px; height: 45px; }
-}
+.score-box { width: 45px; height: 45px; text-align: center; font-size: 20px; border-radius: 8px; }
+.flag { width: 30px; margin: 0 10px; }
+.btn-float { position: fixed; bottom: 20px; right: 20px; padding: 15px 30px; border-radius: 50px; background: var(--neon-cyan); border: none; font-weight: bold; cursor: pointer; }
