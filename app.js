@@ -11,7 +11,7 @@ const getIso = (equipo) => {
     const nombres = {
         'mexico': 'mx', 'argentina': 'ar', 'brasil': 'br', 'espana': 'es',
         'francia': 'fr', 'alemania': 'de', 'usa': 'us', 'canada': 'ca',
-        'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng', 'japon': 'jp'
+        'portugal': 'pt', 'italía': 'it', 'italia': 'it', 'inglaterra': 'gb-eng', 'japon': 'jp'
     };
     const n = equipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     const primeraPalabra = n.split('/')[0].split(' ')[0];
@@ -113,9 +113,14 @@ async function savePredictions() {
 
 function showTab(fase) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    if (fase === 'Ranking') loadRanking();
-    else loadMatches(fase);
+    // Usamos event para detectar el botón clickeado
+    if (event) event.target.classList.add('active');
+    
+    if (fase === 'Ranking') {
+        loadRanking();
+    } else {
+        loadMatches(fase);
+    }
 }
 
 async function loadRanking() {
@@ -124,7 +129,6 @@ async function loadRanking() {
     const saveBtn = document.getElementById('save-btn');
     const body = document.getElementById('ranking-body');
 
-    // Cambiamos visibilidad
     list.style.display = 'none';
     saveBtn.style.display = 'none';
     ranking.style.display = 'block';
@@ -132,7 +136,6 @@ async function loadRanking() {
     body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-cyan)">ACCEDIENDO A LA BASE DE DATOS...</td></tr>';
 
     try {
-        // Consultamos la tabla 'perfiles'
         const { data: perfiles, error } = await _sb
             .from('perfiles')
             .select('nombre, puntos')
@@ -145,7 +148,6 @@ async function loadRanking() {
             return;
         }
 
-        // Generamos las filas con estilo épico
         body.innerHTML = perfiles.map((p, i) => {
             let medalla = i + 1;
             if(i === 0) medalla = '🥇';
@@ -168,12 +170,16 @@ async function loadRanking() {
 }
 
 async function loadPreview() {
-    const { data } = await _sb.from('partidos').select('*').eq('fase', 'Grupos').limit(3);
-    const container = document.getElementById('preview-list');
-    if(data) {
-        container.innerHTML = data.map(m => `
-            <div style="font-size:11px; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:5px;">
-                ${m.equipo_a} vs ${m.equipo_b} <br> <span style="color:var(--neon-purple)">${m.fecha}</span>
-            </div>`).join('');
+    try {
+        const { data } = await _sb.from('partidos').select('*').eq('fase', 'Grupos').limit(3);
+        const container = document.getElementById('preview-list');
+        if(data && container) {
+            container.innerHTML = data.map(m => `
+                <div style="font-size:11px; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:5px;">
+                    ${m.equipo_a} vs ${m.equipo_b} <br> <span style="color:var(--neon-purple)">${m.fecha}</span>
+                </div>`).join('');
+        }
+    } catch (e) {
+        console.log("Error en preview");
     }
 }
