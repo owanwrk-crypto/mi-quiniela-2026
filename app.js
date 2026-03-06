@@ -52,6 +52,23 @@ const getIso = (t) => {
 
     const name = normalize(t);
     const codes = {
+        // --- NUEVOS PAÍSES AÑADIDOS ---
+        'sudafrica': 'za',
+        'republica de corea': 'kr',
+        'corea del sur': 'kr',
+        'catar': 'qa',
+        'qatar': 'qa',
+        'haiti': 'ht',
+        'curazao': 'cw',
+        'cabo verde': 'cv',
+        'arabia saudi': 'sa',
+        'arabia saudita': 'sa',
+        'nueva zelanda': 'nz',
+        'jordania': 'jo',
+        'noruega': 'no',
+        'uzbekistan': 'uz',
+        'ghana': 'gh',
+        'china': 'cn'
         'mexico': 'mx', 'canada': 'ca', 'estados unidos': 'us', 'usa': 'us',
         'espana': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 
         'inglaterra': 'gb-eng', 'italia': 'it', 'paises bajos': 'nl', 'holanda': 'nl',
