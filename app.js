@@ -1,3 +1,4 @@
+// CONFIGURACIÓN DE CONEXIÓN
 const URL_SB = 'https://hamqbcccmefflpkurouu.supabase.co';
 const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
 const _sb = supabase.createClient(URL_SB, KEY_SB);
@@ -5,10 +6,53 @@ const _sb = supabase.createClient(URL_SB, KEY_SB);
 let currentUser = null;
 let currentFase = 'Grupos';
 
-// 1. FUNCIÓN DE INICIO DE SESIÓN
+// 1. CARGAR CARTELERA (PÁGINA PRINCIPAL)
+async function loadPreview() {
+    console.log("Intentando cargar cartelera...");
+    const container = document.getElementById('preview-list');
+    
+    try {
+        const { data: matches, error } = await _sb
+            .from('partidos')
+            .select('equipo_a, equipo_b, fecha')
+            .order('fecha', {ascending: true})
+            .limit(6);
+
+        if (error) throw error;
+
+        if (!matches || matches.length === 0) {
+            container.innerHTML = "📭 No hay partidos cargados.";
+            return;
+        }
+
+        container.innerHTML = '';
+        matches.forEach(m => {
+            const d = new Date(m.fecha);
+            const fechaStr = isNaN(d) ? "PENDIENTE" : d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
+            const horaStr = isNaN(d) ? "--:--" : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+            container.innerHTML += `
+                <div class="fifa-match-row">
+                    <div class="fifa-date">${fechaStr}</div>
+                    <div class="fifa-time">${horaStr}</div>
+                    <div class="fifa-teams">${m.equipo_a} vs ${m.equipo_b}</div>
+                </div>
+            `;
+        });
+        console.log("Cartelera cargada con éxito.");
+
+    } catch (err) {
+        console.error("Error crítico en loadPreview:", err);
+        container.innerHTML = `<div style="color:red; font-size:10px;">Error: ${err.message}</div>`;
+    }
+}
+
+// 2. INICIO DE SESIÓN
 async function handleLogin() {
     const name = document.getElementById('login-name').value.toLowerCase().trim();
     const pin = document.getElementById('login-pin').value;
+
+    if(!name || !pin) return alert("Llena todos los campos");
 
     const { data, error } = await _sb.from('perfiles').select('*').eq('nombre', name).eq('pin', pin).single();
 
@@ -23,7 +67,7 @@ async function handleLogin() {
     }
 }
 
-// 2. NAVEGACIÓN ENTRE PESTAÑAS
+// 3. NAVEGACIÓN
 async function showTab(fase) {
     currentFase = fase;
     const list = document.getElementById('match-list');
@@ -45,35 +89,19 @@ async function showTab(fase) {
     }
 }
 
-// 3. OBTENER CÓDIGO DE BANDERA (ISO)
+// 4. BANDERAS (ISO)
 const getIso = (t) => {
-    const normalize = (str) => 
-        str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() : "";
-
+    const normalize = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() : "";
     const name = normalize(t);
     const codes = {
         'mexico': 'mx', 'canada': 'ca', 'estados unidos': 'us', 'usa': 'us',
         'espana': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 
-        'inglaterra': 'gb-eng', 'italia': 'it', 'paises bajos': 'nl', 'holanda': 'nl',
-        'belgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk', 'suiza': 'ch', 
-        'austria': 'at', 'hungria': 'hu', 'turquia': 'tr', 'polonia': 'pl',
-        'escocia': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
-        'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 
-        'ecuador': 'ec', 'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'peru': 'pe',
-        'panama': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
-        'marruecos': 'ma', 'senegal': 'sn', 'tunez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
-        'nigeria': 'ng', 'camerun': 'cm', 'ghana': 'gh', 'costa de marfil': 'ci',
-        'japon': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'iran': 'ir',
-        'sudafrica': 'za','republica de corea': 'kr', 'corea del sur': 'kr', 'catar': 'qa',
-        'qatar': 'qa', 'haiti': 'ht', 'curazao': 'cw', 'cabo verde': 'cv', 'arabia saudi': 'sa',
-        'arabia saudita': 'sa', 'nueva zelanda': 'nz', 'jordania': 'jo', 'noruega': 'no',
-        'uzbekistan': 'uz', 'ghana': 'gh', 'china': 'cn'
+        'inglaterra': 'gb-eng', 'italia': 'it', 'argentina': 'ar', 'brasil': 'br'
     };
-    if (name.includes('/')) return 'un';
     return codes[name] || 'un'; 
 };
 
-// 4. CARGAR PARTIDOS Y BANDERAS (POST-LOGIN)
+// 5. CARGAR PARTIDOS PARA JUGAR
 async function loadMatches(fase) {
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', currentUser.id);
@@ -101,9 +129,9 @@ async function loadMatches(fase) {
     });
 }
 
-// 5. GUARDAR PRONÓSTICOS
+// 6. GUARDAR PRONÓSTICOS
 async function savePredictions() {
-    const confirmacion = confirm("⚠️ ¿Estás seguro de guardar?\n\nNo podrás modificar después.");
+    const confirmacion = confirm("⚠️ ¿Guardar pronósticos?");
     if (!confirmacion) return; 
 
     const cards = document.querySelectorAll('.match-card');
@@ -128,25 +156,21 @@ async function savePredictions() {
         }
     });
 
-    if (dataToSave.length === 0) return alert("Nada nuevo que guardar.");
-
+    if (dataToSave.length === 0) return;
     const { error } = await _sb.from('pronosticos').upsert(dataToSave, { onConflict: 'perfil_id, partido_id' });
-    
-    if (error) alert("Error: " + error.message);
-    else { alert("✅ ¡Guardado!"); loadMatches(currentFase); }
+    if (error) alert(error.message);
+    else { alert("✅ Guardado"); loadMatches(currentFase); }
 }
 
-// 6. CARGAR RANKING
+// 7. RANKING
 async function loadRanking() {
     const { data } = await _sb.from('perfiles').select('*').order('puntos_totales', {ascending: false});
     const body = document.getElementById('ranking-body');
     body.innerHTML = '';
-
     data.forEach((u, i) => {
         let medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
-        const isMe = currentUser && u.id === currentUser.id ? 'class="me"' : '';
         body.innerHTML += `
-            <tr ${isMe}>
+            <tr ${u.id === currentUser.id ? 'class="me"' : ''}>
                 <td class="medal">${medal}</td>
                 <td>${u.nombre.toUpperCase()}</td>
                 <td><span style="color:var(--neon-cyan)">${u.puntos_totales} pts</span></td>
@@ -155,36 +179,5 @@ async function loadRanking() {
     });
 }
 
-// 7. CARGAR VISTA PREVIA (LA CARTELERA ESTILO FIFA)
-async function loadPreview() {
-    const container = document.getElementById('preview-list');
-    
-    const { data: matches, error } = await _sb
-        .from('partidos')
-        .select('equipo_a, equipo_b, fecha')
-        .order('fecha', {ascending: true})
-        .limit(6);
-
-    if (error) {
-        container.innerHTML = `<div style="color:red">Error de conexión</div>`;
-        return;
-    }
-
-    container.innerHTML = '';
-    matches.forEach(m => {
-        const d = new Date(m.fecha);
-        const fechaStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
-        const horaStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-
-        container.innerHTML += `
-            <div class="fifa-match-row">
-                <div class="fifa-date">${fechaStr}</div>
-                <div class="fifa-time">${horaStr}</div>
-                <div class="fifa-teams">${m.equipo_a} vs ${m.equipo_b}</div>
-            </div>
-        `;
-    });
-}
-
-// EJECUCIÓN INICIAL AL CARGAR LA PÁGINA
+// INICIO AUTOMÁTICO
 loadPreview();
