@@ -63,4 +63,111 @@ async function handleLogin() {
 
 // 3. NAVEGACIÓN DE PESTAÑAS
 function showTab(fase) {
-    current
+    currentFase = fase;
+    const list = document.getElementById('match-list');
+    const ranking = document.getElementById('ranking-list');
+    const saveBtn = document.getElementById('save-btn');
+    
+    // Actualizar botones visualmente
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.toggle('active', b.innerText.includes(fase));
+    });
+
+    if (fase === 'Ranking') {
+        list.style.display = 'none';
+        saveBtn.style.display = 'none';
+        ranking.style.display = 'block';
+        loadRanking();
+    } else {
+        list.style.display = 'block';
+        saveBtn.style.display = 'block';
+        ranking.style.display = 'none';
+        loadMatches(fase);
+    }
+}
+
+// 4. OBTENER CÓDIGO DE BANDERA
+const getIso = (equipo) => {
+    const nombres = {
+        'mexico': 'mx', 'argentina': 'ar', 'brasil': 'br', 'espana': 'es',
+        'francia': 'fr', 'alemania': 'de', 'usa': 'us', 'estados unidos': 'us',
+        'canada': 'ca', 'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng'
+    };
+    const n = equipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return nombres[n] || 'un';
+};
+
+// 5. CARGAR PARTIDOS PARA APOSTAR
+async function loadMatches(fase) {
+    const container = document.getElementById('match-list');
+    container.innerHTML = '<p style="text-align:center">Cargando partidos...</p>';
+
+    // Traer partidos y pronósticos actuales del usuario
+    const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
+    const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
+
+    container.innerHTML = '';
+    matches.forEach(m => {
+        const bet = myBets?.find(b => b.partido_id === m.id);
+        container.innerHTML += `
+            <div class="match-card">
+                <div class="team">
+                    ${m.equipo_a} <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" placeholder="0">
+                    <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" placeholder="0">
+                </div>
+                <div class="team">
+                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png"> ${m.equipo_b}
+                </div>
+            </div>`;
+    });
+}
+
+// 6. GUARDAR PRONÓSTICOS
+async function savePredictions() {
+    const inputs = document.querySelectorAll('.score-box');
+    const dataToSave = [];
+
+    inputs.forEach(input => {
+        const isTeamA = input.id.startsWith('a-');
+        const partidoId = input.id.split('-')[1];
+        const val = input.value;
+
+        if (val !== "") {
+            let item = dataToSave.find(d => d.partido_id === parseInt(partidoId));
+            if (!item) {
+                item = { perfil_id: window.currentUser.id, partido_id: parseInt(partidoId) };
+                dataToSave.push(item);
+            }
+            if (isTeamA) item.goles_a_user = parseInt(val);
+            else item.goles_b_user = parseInt(val);
+        }
+    });
+
+    if (dataToSave.length === 0) return alert("Ingresa al menos un resultado");
+
+    const { error } = await _sb.from('pronosticos').upsert(dataToSave, { onConflict: 'perfil_id, partido_id' });
+
+    if (error) alert("Error al guardar: " + error.message);
+    else alert("✅ ¡Pronósticos guardados!");
+}
+
+// 7. CARGAR RANKING
+async function loadRanking() {
+    const { data } = await _sb.from('perfiles').select('*').order('puntos_totales', {ascending: false});
+    const body = document.getElementById('ranking-body');
+    body.innerHTML = '';
+    data.forEach((u, i) => {
+        body.innerHTML += `
+            <tr ${u.id === window.currentUser.id ? 'class="me"' : ''}>
+                <td>${i + 1}</td>
+                <td>${u.nombre.toUpperCase()}</td>
+                <td>${u.puntos_totales || 0}</td>
+            </tr>`;
+    });
+}
+
+// Iniciar Cartelera
+loadPreview();
