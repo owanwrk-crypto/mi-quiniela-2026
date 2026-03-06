@@ -1,18 +1,32 @@
+/* =========================================
+   VARIABLES Y BASE
+   ========================================= */
 :root {
     --neon-cyan: #00f2ff;
     --neon-green: #39ff14;
+    --neon-red: #ff4444;
     --glass: rgba(255, 255, 255, 0.05);
+    --bg-dark: #020a16;
+    --bg-gradient: radial-gradient(circle at top, #001f3f, #020a16);
 }
 
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top, #001f3f, #020a16);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-gradient);
     background-attachment: fixed;
-    color: white; margin: 0;
+    color: white;
+    margin: 0;
+    line-height: 1.6;
 }
 
-header { text-align: center; padding: 40px 20px; }
+header {
+    text-align: center;
+    padding: 40px 20px;
+}
 
+/* =========================================
+   LOGIN Y PREVIEW (PÁGINA INICIAL)
+   ========================================= */
 .login-page-wrapper {
     display: flex;
     justify-content: center;
@@ -27,10 +41,10 @@ header { text-align: center; padding: 40px 20px; }
     backdrop-filter: blur(15px);
     padding: 40px;
     border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     width: 320px;
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar-preview {
@@ -41,37 +55,98 @@ header { text-align: center; padding: 40px 20px; }
     padding: 20px;
 }
 
-.input-group { text-align: left; margin-bottom: 20px; }
-.input-group label { display: block; font-size: 12px; color: var(--neon-cyan); margin-bottom: 5px; }
-input { 
-    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--neon-cyan);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input[type="text"], 
+input[type="number"], 
+input[type="password"] { 
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    box-sizing: border-box;
+    outline: none;
+    transition: border 0.3s;
+}
+
+input:focus {
+    border-color: var(--neon-cyan);
 }
 
 .btn-login {
-    width: 100%; padding: 15px; background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
-    border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
+}
+
+/* =========================================
+   CARTELERA (FIFA MATCH ROWS)
+   ========================================= */
 .fifa-match-row {
-    text-align: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .fifa-time {
-    color: var(--neon-green); /* Ese verde neón que ya tienes */
+    color: var(--neon-green);
     font-weight: bold;
     font-size: 1.2rem;
     text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
 }
-.fifa-date { font-size: 0.8rem; color: #aaa; text-transform: uppercase; }
 
-/* Estilos para el juego */
-.container { max-width: 600px; margin: auto; padding: 20px; }
+.fifa-date {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-transform: uppercase;
+}
+
+.fifa-teams {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* =========================================
+   SISTEMA DE JUEGO (MATCH CARDS)
+   ========================================= */
+.container {
+    max-width: 650px;
+    margin: auto;
+    padding: 20px;
+}
+
 .match-card {
     display: grid;
-    grid-template-columns: 1fr auto 1fr; /* Izquierda, Centro (Marcador), Derecha */
+    grid-template-columns: 1fr 130px 1fr; /* Proporción fija para simetría total */
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--glass);
     padding: 20px;
     border-radius: 15px;
     margin-bottom: 15px;
@@ -86,52 +161,93 @@ input {
     align-items: center;
     font-weight: bold;
     font-size: 14px;
-    gap: 10px;
+    gap: 12px;
 }
 
 .team.left { justify-content: flex-end; text-align: right; }
 .team.right { justify-content: flex-start; text-align: left; }
 
-/* Banderas circulares y nítidas */
+/* Banderas */
 .flag {
     width: 35px;
     height: 35px;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.2);
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
 }
 
-/* Los cuadros del marcador */
+/* Contenedor del Marcador */
 .score-container {
     display: flex;
     gap: 8px;
     align-items: center;
-    padding: 0 15px;
+    justify-content: center;
 }
 
 .score-box {
     width: 45px;
     height: 45px;
-    background: #000;
-    border: 2px solid var(--neon-cyan);
+    background: #000 !important; /* Forzamos fondo negro para contraste */
+    border: 2px solid var(--neon-cyan) !important;
     border-radius: 8px;
-    color: var(--neon-cyan);
+    color: var(--neon-cyan) !important;
     text-align: center;
     font-size: 22px;
     font-weight: bold;
     font-family: 'Courier New', monospace;
+    padding: 0;
+}
+
+/* Estados de bloqueo y labels */
+.match-card.locked {
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0.8;
 }
 
 .score-box:disabled {
-    background: #222;
-    border-color: #444;
-    color: #888;
+    background: #111 !important;
+    border-color: #444 !important;
+    color: #888 !important;
     cursor: not-allowed;
 }
 
-/* Estado bloqueado */
-.match-card.locked {
-    background: rgba(0, 0, 0, 0.4);
-    border-left: 5px solid #ff4444;
+.status-label {
+    grid-column: 1 / span 3; /* Ocupa todo el ancho abajo */
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 10px;
+    letter-spacing: 1px;
+}
+
+.status-ok { color: var(--neon-green); }
+.status-fail { color: var(--neon-red); }
+
+/* Separador VS */
+.vs-divider {
+    color: white;
+    font-weight: bold;
+    opacity: 0.5;
+}
+
+/* Botón Guardar General */
+#save-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    padding: 15px;
+    background: var(--neon-green);
+    color: black;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+}
+
+#save-btn:hover {
+    filter: brightness(1.2);
 }
