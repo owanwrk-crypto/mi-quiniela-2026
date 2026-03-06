@@ -52,25 +52,32 @@ async function loadMatches(fase) {
     // Reemplaza la parte interna de loadMatches donde está getIso:
 
 const getIso = (t) => {
+    // 1. Limpieza total: quitamos acentos, espacios extras y pasamos a minúsculas
+    const normalize = (str) => 
+        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
+    const name = normalize(t);
+
     const codes = {
-        // --- GRUPO A ---
-        'méxico': 'mx', 'canadá': 'ca', 'estados unidos': 'us',
-        // --- EUROPA ---
-        'españa': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 'inglaterra': 'gb',
-        'italia': 'it', 'países bajos': 'nl', 'bélgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk',
-        'suiza': 'ch', 'austria': 'at', 'hungría': 'hu', 'turquía': 'tr', 'polonia': 'pl',
-        'escocia': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
-        // --- SUDAMÉRICA ---
-        'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 'ecuador': 'ec',
-        'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'perú': 'pe',
-        // --- CONCACAF ---
-        'panamá': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
-        // --- ÁFRICA ---
-        'marruecos': 'ma', 'senegal': 'sn', 'túnez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
-        'nigeria': 'ng', 'camerún': 'cm', 'ghana el de áfrica': 'gh', 'costa de marfil': 'ci',
-        // --- ASIA / OCEANÍA ---
-        'japón': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'irán': 'ir'
+        'mexico': 'mx', 'canada': 'ca', 'estados unidos': 'us', 'usa': 'us',
+        'espana': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 
+        'inglaterra': 'gb-eng', 'italia': 'it', 'paises bajos': 'nl', 'holanda': 'nl',
+        'belgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk', 'suiza': 'ch', 
+        'austria': 'at', 'hungria': 'hu', 'turquia': 'tr', 'polonia': 'pl',
+        'escocía': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
+        'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 
+        'ecuador': 'ec', 'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'peru': 'pe',
+        'panama': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
+        'marruecos': 'ma', 'senegal': 'sn', 'tunez': 'tn', 'argelia': 'dz', 'egipto': 'eg',
+        'nigeria': 'ng', 'camerun': 'cm', 'ghana': 'gh', 'costa de marfil': 'ci',
+        'japon': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'iran': 'ir'
     };
+    
+    // Si el nombre contiene una diagonal (repechajes), devolvemos bandera de la FIFA/ONU
+    if (name.includes('/')) return 'un';
+
+    return codes[name] || 'un'; 
+};
     
     // Limpiamos el nombre: quitamos espacios extras y lo pasamos a minúsculas
     const name = t.trim().toLowerCase();
