@@ -43,12 +43,16 @@
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 4px solid var(--neon-green);">
                 <div id="user-display" style="font-weight: bold; color: var(--neon-green);">JUGADOR: ---</div>
-                <button onclick="location.reload()" style="background: none; border: 1px solid #ff4444; color: #ff4444; cursor: pointer; border-radius: 5px; padding: 5px 10px;">Salir</button>
+                <button onclick="location.reload()" style="background: none; border: 1px solid #ff4444; color: #ff4444; cursor: pointer; border-radius: 5px; padding: 5px 10px; font-size: 12px; font-weight: bold;">SALIR</button>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="tab-btn active" onclick="showTab('Grupos')" style="flex: 1; padding: 10px; cursor: pointer; background: var(--glass); border: 1px solid var(--neon-cyan); color: white; border-radius: 5px;">GRUPOS</button>
-                <button class="tab-btn" onclick="showTab('Ranking')" style="flex: 1; padding: 10px; cursor: pointer; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px;">RANKING</button>
+            <div class="tabs-container" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
+                <button class="tab-btn active" onclick="showTab('Grupos')">GRUPOS</button>
+                <button class="tab-btn" onclick="showTab('Octavos')">OCTAVOS</button>
+                <button class="tab-btn" onclick="showTab('Cuartos')">CUARTOS</button>
+                <button class="tab-btn" onclick="showTab('Semis')">SEMIS</button>
+                <button class="tab-btn" onclick="showTab('Final')">FINAL</button>
+                <button class="tab-btn" onclick="showTab('Ranking')" style="border-color: var(--neon-green); color: var(--neon-green);">🏆 RANKING</button>
             </div>
 
             <div id="match-list">
@@ -58,9 +62,9 @@
                 <table style="width: 100%; border-collapse: collapse; background: var(--glass); border-radius: 10px; overflow: hidden;">
                     <thead style="background: rgba(0,242,255,0.2);">
                         <tr>
-                            <th style="padding: 15px; text-align: left;">POS</th>
-                            <th style="padding: 15px; text-align: left;">JUGADOR</th>
-                            <th style="padding: 15px; text-align: center;">PTS</th>
+                            <th style="padding: 15px; text-align: left; font-family: 'Orbitron'; font-size: 12px;">POS</th>
+                            <th style="padding: 15px; text-align: left; font-family: 'Orbitron'; font-size: 12px;">JUGADOR</th>
+                            <th style="padding: 15px; text-align: center; font-family: 'Orbitron'; font-size: 12px;">PTS</th>
                         </tr>
                     </thead>
                     <tbody id="ranking-body">
@@ -68,7 +72,7 @@
                 </table>
             </div>
 
-            <button id="save-btn" onclick="savePredictions()">
+            <button id="save-btn" onclick="savePredictions()" style="margin-top: 20px;">
                 💾 GUARDAR MIS PRONÓSTICOS
             </button>
 

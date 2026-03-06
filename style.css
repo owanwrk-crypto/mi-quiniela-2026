@@ -70,7 +70,6 @@ header {
 }
 
 input[type="text"], 
-input[type="number"], 
 input[type="password"] { 
     width: 100%;
     padding: 12px;
@@ -134,6 +133,39 @@ input:focus {
 }
 
 /* =========================================
+   NAVEGACIÓN POR PESTAÑAS (TABS)
+   ========================================= */
+.tabs-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-cyan) transparent;
+}
+
+.tab-btn {
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 10px 15px;
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    border-color: var(--neon-cyan);
+    background: rgba(0, 242, 255, 0.15);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+/* =========================================
    SISTEMA DE JUEGO (MATCH CARDS)
    ========================================= */
 .container {
@@ -144,7 +176,7 @@ input:focus {
 
 .match-card {
     display: grid;
-    grid-template-columns: 1fr 130px 1fr; /* Proporción fija para simetría total */
+    grid-template-columns: 1fr 150px 1fr; /* Espacio ampliado para marcadores sin flechas */
     align-items: center;
     background: var(--glass);
     padding: 20px;
@@ -155,7 +187,6 @@ input:focus {
     transition: all 0.3s ease;
 }
 
-/* Alineación de equipos */
 .team {
     display: flex;
     align-items: center;
@@ -167,7 +198,6 @@ input:focus {
 .team.left { justify-content: flex-end; text-align: right; }
 .team.right { justify-content: flex-start; text-align: left; }
 
-/* Banderas */
 .flag {
     width: 35px;
     height: 35px;
@@ -178,32 +208,35 @@ input:focus {
     flex-shrink: 0;
 }
 
-/* Contenedor del Marcador */
+/* MARCADORES LIMPIOS (SIN FLECHAS) */
 .score-container {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
     justify-content: center;
 }
 
 .score-box {
-    width: 45px;
-    height: 45px;
-    background: #000 !important; /* Forzamos fondo negro para contraste */
+    width: 55px !important;
+    height: 50px !important;
+    background: #000 !important;
     border: 2px solid var(--neon-cyan) !important;
     border-radius: 8px;
     color: var(--neon-cyan) !important;
     text-align: center;
-    font-size: 22px;
+    font-size: 26px !important;
     font-weight: bold;
     font-family: 'Courier New', monospace;
-    padding: 0;
+    padding: 5px;
+    cursor: pointer;
+    -moz-appearance: textfield; /* Oculta flechas Firefox */
 }
 
-/* Estados de bloqueo y labels */
-.match-card.locked {
-    background: rgba(0, 0, 0, 0.4);
-    opacity: 0.8;
+/* Oculta flechas Chrome/Safari/Edge */
+.score-box::-webkit-outer-spin-button,
+.score-box::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .score-box:disabled {
@@ -211,12 +244,19 @@ input:focus {
     border-color: #444 !important;
     color: #888 !important;
     cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.vs-divider {
+    color: white;
+    font-weight: bold;
+    opacity: 0.5;
 }
 
 .status-label {
-    grid-column: 1 / span 3; /* Ocupa todo el ancho abajo */
+    grid-column: 1 / span 3;
     text-align: center;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     margin-top: 10px;
     letter-spacing: 1px;
@@ -225,14 +265,14 @@ input:focus {
 .status-ok { color: var(--neon-green); }
 .status-fail { color: var(--neon-red); }
 
-/* Separador VS */
-.vs-divider {
-    color: white;
-    font-weight: bold;
-    opacity: 0.5;
+.match-card.locked {
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0.8;
 }
 
-/* Botón Guardar General */
+/* =========================================
+   BOTONES Y RANKING
+   ========================================= */
 #save-btn {
     display: block;
     width: 100%;
@@ -246,8 +286,15 @@ input:focus {
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+    text-transform: uppercase;
 }
 
 #save-btn:hover {
     filter: brightness(1.2);
+    transform: scale(1.02);
+}
+
+tr.me {
+    background: rgba(57, 255, 20, 0.1);
+    border-left: 4px solid var(--neon-green);
 }
