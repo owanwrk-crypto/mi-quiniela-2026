@@ -246,3 +246,49 @@ header h1 {
     color: #020a16;
     box-shadow: 0 0 10px #00f2ff;
 }
+/* CENTRADO Y ESTILO ÉPICO DEL RANKING */
+#ranking-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra la tabla en la pantalla */
+    width: 100%;
+    margin-top: 20px;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.ranking-table {
+    width: 95%;
+    max-width: 500px; /* Tamaño ideal para móvil y PC */
+    border-collapse: separate;
+    border-spacing: 0 10px; /* Espacio entre filas */
+    margin: 0 auto;
+}
+
+.ranking-table thead th {
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 15px;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.ranking-table tbody tr {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    transition: 0.3s;
+}
+
+.ranking-table td {
+    padding: 15px;
+    text-align: center; /* Centra el contenido de las celdas */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Redondear las esquinas de las filas */
+.ranking-table td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+.ranking-table td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255, 255, 255, 0.1); }
+
+/* Efecto para los Ganadores */
+.ranking-table tr:nth-child(1) { box-shadow: 0 0 15px rgba(255, 215
