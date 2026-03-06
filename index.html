@@ -13,14 +13,26 @@
         <p id="user-display">Bienvenido a la Quiniela de Amigos</p>
     </header>
 
-    <div id="login-section" class="container">
-        <div class="card">
-            <h2>Ingreso</h2>
-            <input type="text" id="login-name" placeholder="Tu nombre (ej: oswaldo)">
-            <input type="password" id="login-pin" placeholder="PIN de 4 dígitos">
-            <button onclick="handleLogin()" class="btn-main">ENTRAR</button>
+    <div id="login-section" class="login-container">
+    <div class="login-card">
+        <div class="trophy-icon">🏆</div>
+        <h2>MUNDIAL 2026</h2>
+        <p>Ingresa tus credenciales para participar</p>
+        
+        <div class="input-group">
+            <label>USUARIO</label>
+            <input type="text" id="login-name" placeholder="Ej: oswaldo">
         </div>
+        
+        <div class="input-group">
+            <label>PIN DE ACCESO</label>
+            <input type="password" id="login-pin" placeholder="****">
+        </div>
+        
+        <button onclick="handleLogin()" class="btn-login">INICIAR SESIÓN</button>
+        <div class="login-footer">Solo personal autorizado</div>
     </div>
+</div>
 
     <div id="main-section" class="container" style="display:none">
         <nav class="tabs">

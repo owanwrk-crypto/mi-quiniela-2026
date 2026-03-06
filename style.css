@@ -92,3 +92,109 @@ body {
     bottom: 20px;
     right: 20px;
 }
+/* Estilos para la Pantalla de Inicio Épica */
+.login-container {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: fadeIn 1s ease-out;
+}
+
+.trophy-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px gold);
+    animation: float 3s ease-in-out infinite;
+}
+
+.login-card h2 {
+    letter-spacing: 3px;
+    color: var(--neon-cyan);
+    margin-bottom: 5px;
+}
+
+.login-card p {
+    font-size: 0.8rem;
+    color: #ccc;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    font-size: 11px;
+    color: var(--neon-cyan);
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+.login-card input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box; /* Importante para que no se salga del cuadro */
+    transition: 0.3s;
+}
+
+.login-card input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    outline: none;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(45deg, var(--neon-cyan), #0066ff);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 242, 255, 0.4);
+}
+
+.login-footer {
+    margin-top: 20px;
+    font-size: 10px;
+    color: #555;
+}
+
+/* Animaciones */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
