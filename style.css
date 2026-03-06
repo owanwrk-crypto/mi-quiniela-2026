@@ -67,16 +67,71 @@ input {
 
 /* Estilos para el juego */
 .container { max-width: 600px; margin: auto; padding: 20px; }
-.match-card { 
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 10px;
+.match-card {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* Izquierda, Centro (Marcador), Derecha */
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    transition: all 0.3s ease;
 }
-.score-box { width: 45px; height: 45px; text-align: center; font-size: 20px; border-radius: 8px; }
-.flag { width: 30px; margin: 0 10px; }
-.btn-float { position: fixed; bottom: 20px; right: 20px; padding: 15px 30px; border-radius: 50px; background: var(--neon-cyan); border: none; font-weight: bold; cursor: pointer; }
+
+/* Alineación de equipos */
+.team {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 14px;
+    gap: 10px;
+}
+
+.team.left { justify-content: flex-end; text-align: right; }
+.team.right { justify-content: flex-start; text-align: left; }
+
+/* Banderas circulares y nítidas */
+.flag {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* Los cuadros del marcador */
+.score-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 0 15px;
+}
+
+.score-box {
+    width: 45px;
+    height: 45px;
+    background: #000;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 8px;
+    color: var(--neon-cyan);
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+.score-box:disabled {
+    background: #222;
+    border-color: #444;
+    color: #888;
+    cursor: not-allowed;
+}
+
+/* Estado bloqueado */
 .match-card.locked {
-    opacity: 0.6;
-    filter: grayscale(0.4);
-    border-left: 4px solid #ff4444;
-    pointer-events: none; /* Evita cualquier interacción */
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 5px solid #ff4444;
 }

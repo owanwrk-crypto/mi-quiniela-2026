@@ -77,21 +77,24 @@ function showTab(fase) {
     }
 }
 
-// 4. BANDERAS AUTOMÁTICAS
+// 4. DICCIONARIO DE BANDERAS AMPLIADO
 const getIso = (equipo) => {
     const nombres = {
         'mexico': 'mx', 'argentina': 'ar', 'brasil': 'br', 'espana': 'es',
         'francia': 'fr', 'alemania': 'de', 'usa': 'us', 'estados unidos': 'us',
-        'canada': 'ca', 'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng'
+        'canada': 'ca', 'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng',
+        'paises bajos': 'nl', 'holanda': 'nl', 'belgica': 'be', 'croacia': 'hr',
+        'uruguay': 'uy', 'colombia': 'co', 'chile': 'cl', 'japon': 'jp', 'corea del sur': 'kr',
+        'marruecos': 'ma', 'suiza': 'ch', 'dinamarca': 'dk', 'ecuador': 'ec'
     };
-    const n = equipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const n = equipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     return nombres[n] || 'un';
 };
 
-// 5. CARGAR PARTIDOS CON BLOQUEO DE TIEMPO
+// 5. CARGAR PARTIDOS (CON DISEÑO MEJORADO Y BLOQUEO POST-GUARDADO)
 async function loadMatches(fase) {
     const container = document.getElementById('match-list');
-    container.innerHTML = '<p style="text-align:center">Cargando partidos...</p>';
+    container.innerHTML = '<p style="text-align:center">Cargando encuentros...</p>';
 
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
@@ -101,35 +104,45 @@ async function loadMatches(fase) {
 
     matches.forEach(m => {
         const bet = myBets?.find(b => b.partido_id === m.id);
-        
-        // LÓGICA DE BLOQUEO: Combinamos fecha y hora (ej: 2026-06-11 + 15:00)
-        // Si el partido no tiene hora, usamos las 12:00 por defecto
         const horaLimpia = m.hora ? m.hora.replace(' ', '') : "12:00";
         const fechaPartido = new Date(`${m.fecha}T${horaLimpia}:00`);
         
-        // Bloqueamos 1 hora (3600000 ms) antes del inicio
-        const bloqueado = (fechaPartido - ahora) < 3600000;
+        // Bloqueo si: ya pasó el tiempo O si ya existe una apuesta en la base de datos
+        const yaAposto = bet !== undefined;
+        const tiempoCerrado = (fechaPartido - ahora) < 3600000;
+        const bloqueado = yaAposto || tiempoCerrado;
 
         container.innerHTML += `
-            <div class="match-card ${bloqueado ? 'locked' : ''}">
-                <div class="team">
-                    ${m.equipo_a} <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
+            <div class="match-card ${bloqueado ? 'locked' : ''}" style="position:relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                
+                <div class="team" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; font-weight: bold;">
+                    <span>${m.equipo_a.toUpperCase()}</span>
+                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
                 </div>
-                <div style="display:flex; gap:10px; align-items:center;">
+
+                <div style="display: flex; gap: 8px; align-items: center; padding: 0 15px;">
                     <input type="number" class="score-box" id="a-${m.id}" 
-                        value="${bet?.goles_a_user ?? ''}" ${bloqueado ? 'disabled' : ''} placeholder="-">
+                        value="${bet?.goles_a_user ?? ''}" ${bloqueado ? 'disabled' : ''} 
+                        style="width: 45px; height: 45px; text-align: center; font-size: 20px; background: #000; border: 2px solid var(--neon-cyan); color: #fff; border-radius: 8px;">
+                    <span style="color: var(--neon-cyan); font-weight: bold;">-</span>
                     <input type="number" class="score-box" id="b-${m.id}" 
-                        value="${bet?.goles_b_user ?? ''}" ${bloqueado ? 'disabled' : ''} placeholder="-">
+                        value="${bet?.goles_b_user ?? ''}" ${bloqueado ? 'disabled' : ''} 
+                        style="width: 45px; height: 45px; text-align: center; font-size: 20px; background: #000; border: 2px solid var(--neon-cyan); color: #fff; border-radius: 8px;">
                 </div>
-                <div class="team">
-                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png"> ${m.equipo_b}
+
+                <div class="team" style="display: flex; align-items: center; justify-content: flex-start; gap: 10px; font-weight: bold;">
+                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                    <span>${m.equipo_b.toUpperCase()}</span>
                 </div>
-                ${bloqueado ? '<div style="font-size:10px; color:#ff4444; position:absolute; bottom:5px;">CERRADO</div>' : ''}
+
+                <div style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: bold;">
+                    ${yaAposto ? '<span style="color:var(--neon-green)">✓ GUARDADO</span>' : (tiempoCerrado ? '<span style="color:#ff4444">CERRADO</span>' : '')}
+                </div>
             </div>`;
     });
 }
 
-// 6. GUARDAR PRONÓSTICOS (UPSERT)
+// 6. GUARDAR PRONÓSTICOS
 async function savePredictions() {
     const inputs = document.querySelectorAll('.score-box:not(:disabled)');
     const dataToSave = new Map();
@@ -155,13 +168,16 @@ async function savePredictions() {
         d.hasOwnProperty('goles_a_user') && d.hasOwnProperty('goles_b_user')
     );
 
-    if (listaFinal.length === 0) return alert("Completa ambos campos de un partido para guardar");
+    if (listaFinal.length === 0) return alert("Ingresa marcadores completos para guardar");
+
+    // Confirmación antes de bloquear para siempre
+    if (!confirm("⚠️ Una vez guardados, no podrás modificar estos marcadores. ¿Deseas continuar?")) return;
 
     const { error } = await _sb.from('pronosticos').upsert(listaFinal, { onConflict: 'perfil_id, partido_id' });
 
     if (error) alert("Error: " + error.message);
     else {
-        alert("✅ ¡Pronósticos guardados!");
+        alert("✅ ¡Pronósticos guardados exitosamente!");
         loadMatches(currentFase);
     }
 }
