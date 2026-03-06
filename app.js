@@ -51,20 +51,19 @@ async function loadMatches(fase) {
     const getFlag = (team) => `https://flagcdn.com/w80/${getIso(team)}.png`;
     // Reemplaza la parte interna de loadMatches donde está getIso:
 
+// FUNCIÓN PARA LIMPIAR NOMBRES Y OBTENER BANDERAS
 const getIso = (t) => {
-    // 1. Limpieza total: quitamos acentos, espacios extras y pasamos a minúsculas
     const normalize = (str) => 
-        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+        str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() : "";
 
     const name = normalize(t);
-
     const codes = {
         'mexico': 'mx', 'canada': 'ca', 'estados unidos': 'us', 'usa': 'us',
         'espana': 'es', 'francia': 'fr', 'alemania': 'de', 'portugal': 'pt', 
         'inglaterra': 'gb-eng', 'italia': 'it', 'paises bajos': 'nl', 'holanda': 'nl',
         'belgica': 'be', 'croacia': 'hr', 'dinamarca': 'dk', 'suiza': 'ch', 
         'austria': 'at', 'hungria': 'hu', 'turquia': 'tr', 'polonia': 'pl',
-        'escocía': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
+        'escocia': 'gb-sct', 'serbia': 'rs', 'republica checa': 'cz',
         'argentina': 'ar', 'brasil': 'br', 'uruguay': 'uy', 'colombia': 'co', 
         'ecuador': 'ec', 'chile': 'cl', 'venezuela': 've', 'paraguay': 'py', 'peru': 'pe',
         'panama': 'pa', 'costa rica': 'cr', 'jamaica': 'jm', 'honduras': 'hn', 'el salvador': 'sv',
@@ -72,6 +71,39 @@ const getIso = (t) => {
         'nigeria': 'ng', 'camerun': 'cm', 'ghana': 'gh', 'costa de marfil': 'ci',
         'japon': 'jp', 'corea del sur': 'kr', 'australia': 'au', 'arabia saudita': 'sa', 'iran': 'ir'
     };
+    if (name.includes('/')) return 'un';
+    return codes[name] || 'un'; 
+};
+
+// FUNCIÓN PARA CARGAR PARTIDOS
+async function loadMatches(fase) {
+    const { data: matches, error: mError } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
+    const { data: myBets, error: bError } = await _sb.from('pronosticos').select('*').eq('perfil_id', currentUser.id);
+    
+    if (mError || bError) return console.error("Error cargando datos");
+
+    const container = document.getElementById('match-list');
+    container.innerHTML = '';
+    const now = new Date();
+
+    matches.forEach(m => {
+        const isLocked = (now > new Date(new Date(m.fecha).getTime() - (3*60*60*1000))) || myBets.some(b => b.partido_id === m.id);
+        const bet = myBets.find(b => b.partido_id === m.id);
+
+        container.innerHTML += `
+            <div class="match-card ${isLocked ? 'locked' : ''}">
+                <div class="team" style="display:flex; align-items:center; flex:1; justify-content:flex-end; text-align:right">
+                    ${m.equipo_a} <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
+                </div>
+                <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${isLocked ? 'disabled' : ''}>
+                <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${isLocked ? 'disabled' : ''}>
+                <div class="team" style="display:flex; align-items:center; flex:1; text-align:left">
+                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png"> ${m.equipo_b}
+                </div>
+            </div>
+        `;
+    });
+}
     
     // Si el nombre contiene una diagonal (repechajes), devolvemos bandera de la FIFA/ONU
     if (name.includes('/')) return 'un';
