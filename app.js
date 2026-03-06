@@ -43,41 +43,35 @@ async function showTab(fase) {
 async function loadMatches(fase) {
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', currentUser.id);
-    
     const container = document.getElementById('match-list');
     container.innerHTML = '';
     const now = new Date();
 
+    // Diccionario simple para banderas (puedes ampliarlo)
+    const getFlag = (team) => `https://flagcdn.com/w80/${getIso(team)}.png`;
+    const getIso = (t) => {
+        const codes = {'méxico':'mx', 'argentina':'ar', 'brasil':'br', 'españa':'es', 'canadá':'ca', 'estados unidos':'us', 'francia':'fr', 'alemania':'de', 'portugal':'pt', 'uruguay':'uy', 'colombia':'co', 'panamá':'pa'};
+        return codes[t.toLowerCase()] || 'un'; // 'un' es bandera de la ONU para desconocidos
+    };
+
     matches.forEach(m => {
-        const matchDate = new Date(m.fecha);
-        const lockTime = new Date(matchDate.getTime() - (3 * 60 * 60 * 1000));
-        const isPastTime = now > lockTime; // Bloqueo por tiempo (3 horas antes)
-        
+        const isLocked = (now > new Date(new Date(m.fecha).getTime() - (3*60*60*1000))) || myBets.some(b => b.partido_id === m.id);
         const bet = myBets.find(b => b.partido_id === m.id);
-        
-        // REGLA DE BLOQUEO: Se bloquea si ya pasó el tiempo O si ya existe una apuesta guardada
-        const alreadySaved = bet !== undefined && bet.goles_a_user !== null;
-        const shouldLock = isPastTime || alreadySaved;
 
         container.innerHTML += `
-            <div class="match-card ${shouldLock ? 'locked' : ''}">
-                <div class="team" style="text-align:right">${m.equipo_a}</div>
-                <input type="number" class="score-box" id="a-${m.id}" 
-                    value="${bet?.goles_a_user ?? ''}" 
-                    ${shouldLock ? 'disabled' : ''}>
-                
-                <input type="number" class="score-box" id="b-${m.id}" 
-                    value="${bet?.goles_b_user ?? ''}" 
-                    ${shouldLock ? 'disabled' : ''}>
-                
-                <div class="team">${m.equipo_b}</div>
-                ${shouldLock ? '<span>🔒</span>' : ''}
+            <div class="match-card ${isLocked ? 'locked' : ''}">
+                <div class="team" style="display:flex; align-items:center; flex:1; justify-content:flex-end">
+                    ${m.equipo_a} <img class="flag" src="${getFlag(m.equipo_a)}">
+                </div>
+                <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${isLocked ? 'disabled' : ''}>
+                <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${isLocked ? 'disabled' : ''}>
+                <div class="team" style="display:flex; align-items:center; flex:1">
+                    <img class="flag" src="${getFlag(m.equipo_b)}"> ${m.equipo_b}
+                </div>
             </div>
         `;
     });
 }
-
-// ... (otras funciones como loadMatches)
 
 async function savePredictions() {
     // 1. Preguntar al usuario antes de proceder
@@ -128,5 +122,19 @@ async function savePredictions() {
 async function loadRanking() {
     const { data } = await _sb.from('perfiles').select('*').order('puntos_totales', {ascending: false});
     const body = document.getElementById('ranking-body');
-    body.innerHTML = data.map((u, i) => `<tr><td>${i+1}</td><td>${u.nombre}</td><td><strong>${u.puntos_totales}</strong></td></tr>`).join('');
+    body.innerHTML = '';
+
+    data.forEach((u, i) => {
+        let medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+        // Si el ID del ranking es el del usuario actual, le ponemos la clase 'me'
+        const isMe = u.id === currentUser.id ? 'class="me"' : '';
+        
+        body.innerHTML += `
+            <tr ${isMe}>
+                <td class="medal">${medal}</td>
+                <td>${u.nombre.toUpperCase()}</td>
+                <td><span style="color:var(--neon-cyan)">${u.puntos_totales} pts</span></td>
+            </tr>
+        `;
+    });
 }
