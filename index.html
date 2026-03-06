@@ -10,39 +10,35 @@
 <body>
     <header>
         <h1>🏆 MUNDIAL FIFA 2026</h1>
-        <p id="user-display">Bienvenido a la Quiniela de Amigos</p>
+        <p id="user-display">Bienvenido a la Quiniela</p>
     </header>
 
     <div id="login-section" class="login-container">
-    <div class="login-card">
-        <div class="trophy-icon">🏆</div>
-        <h2>MUNDIAL 2026</h2>
-        <p>Ingresa tus credenciales para participar</p>
         <div class="login-card">
-    <div class="trophy-icon">🏆</div>
-    <h2>MUNDIAL 2026</h2>
-    
-    <div id="next-matches-preview" class="preview-container">
-        <p class="preview-title">PRÓXIMOS ENCUENTROS</p>
-        <div id="preview-list">Cargando horarios...</div>
-    </div>
+            <div class="trophy-icon">🏆</div>
+            <h2>MUNDIAL 2026</h2>
+            
+            <div id="next-matches-preview" class="preview-container">
+                <p class="preview-title">PRÓXIMOS ENCUENTROS</p>
+                <div id="preview-list">Cargando horarios...</div>
+            </div>
 
-    <div class="input-group">
-        
-        <div class="input-group">
-            <label>USUARIO</label>
-            <input type="text" id="login-name" placeholder="Ej: oswaldo">
+            <p>Ingresa para participar</p>
+            
+            <div class="input-group">
+                <label>USUARIO</label>
+                <input type="text" id="login-name" placeholder="Ej: oswaldo">
+            </div>
+            
+            <div class="input-group">
+                <label>PIN DE ACCESO</label>
+                <input type="password" id="login-pin" placeholder="****">
+            </div>
+            
+            <button onclick="handleLogin()" class="btn-login">INICIAR SESIÓN</button>
+            <div class="login-footer">Solo personal autorizado</div>
         </div>
-        
-        <div class="input-group">
-            <label>PIN DE ACCESO</label>
-            <input type="password" id="login-pin" placeholder="****">
-        </div>
-        
-        <button onclick="handleLogin()" class="btn-login">INICIAR SESIÓN</button>
-        <div class="login-footer">Solo personal autorizado</div>
     </div>
-</div>
 
     <div id="main-section" class="container" style="display:none">
         <nav class="tabs">
@@ -62,7 +58,7 @@
             </table>
         </div>
 
-        <button id="save-btn" onclick="savePredictions()" class="btn-float">💾 GUARDAR</button>
+        <button id="save-btn" onclick="savePredictions()" class="btn-float">💾 GUARDAR PRONÓSTICOS</button>
     </div>
 
     <script src="app.js"></script>
