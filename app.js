@@ -3,25 +3,50 @@ const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
 const _sb = supabase.createClient(URL_SB, KEY_SB);
 
 async function loadPreview() {
-    const { data: matches, error } = await _sb.from('partidos').select('*').order('fecha', {ascending: true}).limit(5);
     const container = document.getElementById('preview-list');
-    
-    if (error || !matches) {
-        container.innerHTML = "Error de conexión";
-        return;
-    }
+    console.log("Iniciando carga de partidos...");
 
-    container.innerHTML = '';
-    matches.forEach(m => {
-        const d = new Date(m.fecha);
-        container.innerHTML += `
-            <div class="fifa-match-row">
-                <div class="fifa-date">${d.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})}</div>
-                <div class="fifa-time">${d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})}</div>
-                <div class="fifa-teams">${m.equipo_a} vs ${m.equipo_b}</div>
-            </div>
-        `;
-    });
+    try {
+        // Intentamos traer los datos
+        const { data: matches, error } = await _sb
+            .from('partidos')
+            .select('equipo_a, equipo_b, fecha')
+            .order('fecha', { ascending: true })
+            .limit(6);
+
+        if (error) {
+            console.error("Error de Supabase:", error);
+            container.innerHTML = `<div style="color:#ff4444; font-size:12px;">❌ Error: ${error.message}</div>`;
+            return;
+        }
+
+        if (!matches || matches.length === 0) {
+            console.warn("La tabla está vacía");
+            container.innerHTML = "📭 No hay partidos programados.";
+            return;
+        }
+
+        // Si hay datos, limpiamos y llenamos
+        container.innerHTML = '';
+        matches.forEach(m => {
+            const d = new Date(m.fecha);
+            const fechaTxt = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase();
+            const horaTxt = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+            container.innerHTML += `
+                <div class="fifa-match-row">
+                    <div class="fifa-date">${fechaTxt}</div>
+                    <div class="fifa-time">${horaTxt}</div>
+                    <div class="fifa-teams">${m.equipo_a} vs ${m.equipo_b}</div>
+                </div>
+            `;
+        });
+        console.log("Partidos cargados correctamente:", matches);
+
+    } catch (err) {
+        console.error("Error inesperado:", err);
+        container.innerHTML = `<div style="color:red">Error fatal al cargar</div>`;
+    }
 }
 
 async function handleLogin() {
