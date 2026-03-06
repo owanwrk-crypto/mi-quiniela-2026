@@ -11,7 +11,7 @@ const getIso = (equipo) => {
     const nombres = {
         'mexico': 'mx', 'argentina': 'ar', 'brasil': 'br', 'espana': 'es',
         'francia': 'fr', 'alemania': 'de', 'usa': 'us', 'canada': 'ca',
-        'portugal': 'pt', 'italía': 'it', 'italia': 'it', 'inglaterra': 'gb-eng', 'japon': 'jp'
+        'portugal': 'pt', 'italia': 'it', 'inglaterra': 'gb-eng', 'japon': 'jp'
     };
     const n = equipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     const primeraPalabra = n.split('/')[0].split(' ')[0];
@@ -113,14 +113,10 @@ async function savePredictions() {
 
 function showTab(fase) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    // Usamos event para detectar el botón clickeado
     if (event) event.target.classList.add('active');
     
-    if (fase === 'Ranking') {
-        loadRanking();
-    } else {
-        loadMatches(fase);
-    }
+    if (fase === 'Ranking') loadRanking();
+    else loadMatches(fase);
 }
 
 async function loadRanking() {
@@ -133,18 +129,19 @@ async function loadRanking() {
     saveBtn.style.display = 'none';
     ranking.style.display = 'block';
     
-    body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-cyan)">ACCEDIENDO A LA BASE DE DATOS...</td></tr>';
+    body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-cyan)">ACCEDIENDO A LA RED...</td></tr>';
 
     try {
+        // CORRECCIÓN AQUÍ: Se usa puntos_totales
         const { data: perfiles, error } = await _sb
             .from('perfiles')
-            .select('nombre, puntos')
-            .order('puntos', { ascending: false });
+            .select('nombre, puntos_totales')
+            .order('puntos_totales', { ascending: false });
 
         if (error) throw error;
 
         if (!perfiles || perfiles.length === 0) {
-            body.innerHTML = '<tr><td colspan="3">NO HAY JUGADORES REGISTRADOS</td></tr>';
+            body.innerHTML = '<tr><td colspan="3">SIN JUGADORES ACTIVOS</td></tr>';
             return;
         }
 
@@ -158,14 +155,14 @@ async function loadRanking() {
                 <tr>
                     <td style="font-family:'Orbitron'; font-weight:bold;">${medalla}</td>
                     <td style="color:var(--neon-cyan); text-align:left; padding-left:20px;">${p.nombre.toUpperCase()}</td>
-                    <td style="font-weight:bold; color:var(--neon-green)">${p.puntos || 0}</td>
+                    <td style="font-weight:bold; color:var(--neon-green)">${p.puntos_totales || 0}</td>
                 </tr>
             `;
         }).join('');
 
     } catch (err) {
         console.error("Error en Ranking:", err);
-        body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-red)">ERROR DE CONEXIÓN AL RANKING</td></tr>';
+        body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-red)">ERROR: REVISA LA COLUMNA puntos_totales</td></tr>';
     }
 }
 
@@ -179,7 +176,5 @@ async function loadPreview() {
                     ${m.equipo_a} vs ${m.equipo_b} <br> <span style="color:var(--neon-purple)">${m.fecha}</span>
                 </div>`).join('');
         }
-    } catch (e) {
-        console.log("Error en preview");
-    }
+    } catch (e) { console.log("Error en preview"); }
 }
