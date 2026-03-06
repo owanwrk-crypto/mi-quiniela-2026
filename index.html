@@ -44,38 +44,14 @@
 
             <div class="tabs-container">
                 <button class="tab-btn active" onclick="showTab('Grupos')">GRUPOS</button>
-                <button class="tab-btn" onclick="showTab('Bracket')">📊 BRACKET</button>
+                <button class="tab-btn" onclick="showTab('Octavos')">OCTAVOS</button>
+                <button class="tab-btn" onclick="showTab('Cuartos')">CUARTOS</button>
+                <button class="tab-btn" onclick="showTab('Semis')">SEMIS</button>
+                <button class="tab-btn" onclick="showTab('Final')">FINAL</button>
                 <button class="tab-btn tab-ranking" onclick="showTab('Ranking')">🏆 RANKING</button>
             </div>
 
             <div id="match-list"></div>
-
-            <div id="bracket-view" style="display: none;">
-                <div class="groups-grid" id="groups-summary"></div>
-                
-                <div class="tournament-bracket">
-                    <div class="bracket-column">
-                        <h4 class="bracket-title">OCTAVOS IZQ</h4>
-                        <div class="match-slot" id="oct-1"></div>
-                        <div class="match-slot" id="oct-2"></div>
-                        <div class="match-slot" id="oct-3"></div>
-                        <div class="match-slot" id="oct-4"></div>
-                    </div>
-                    
-                    <div class="bracket-column">
-                        <h4 class="bracket-title">FINAL</h4>
-                        <div class="match-slot final-slot" id="final-match"></div>
-                    </div>
-
-                    <div class="bracket-column">
-                        <h4 class="bracket-title">OCTAVOS DER</h4>
-                        <div class="match-slot" id="oct-5"></div>
-                        <div class="match-slot" id="oct-6"></div>
-                        <div class="match-slot" id="oct-7"></div>
-                        <div class="match-slot" id="oct-8"></div>
-                    </div>
-                </div>
-            </div>
 
             <div id="ranking-list" style="display: none;">
                 <table class="ranking-table">

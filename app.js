@@ -22,9 +22,12 @@ async function handleLogin() {
     const name = document.getElementById('login-name').value.trim();
     const pin = document.getElementById('login-pin').value.trim();
     const btn = document.getElementById('login-btn');
+
     if(!name || !pin) return alert("Completa los datos");
     btn.innerText = "VERIFICANDO...";
+
     const { data: user, error } = await _sb.from('perfiles').select('*').eq('nombre', name).eq('pin', pin).single();
+
     if (error || !user) {
         alert("Usuario o PIN incorrectos");
         btn.innerText = "ENTRAR A JUGAR";
@@ -41,112 +44,137 @@ async function loadMatches(fase) {
     currentFase = fase;
     const container = document.getElementById('match-list');
     const ranking = document.getElementById('ranking-list');
-    const bracket = document.getElementById('bracket-view');
     const saveBtn = document.getElementById('save-btn');
+
     ranking.style.display = 'none';
-    bracket.style.display = 'none';
     saveBtn.style.display = 'block';
     container.style.display = 'block';
-    container.innerHTML = '<p style="text-align:center">Cargando partidos...</p>';
+    container.innerHTML = '<p style="text-align:center; color: var(--neon-cyan)">Sincronizando satélites...</p>';
+
     const { data: matches } = await _sb.from('partidos').select('*').eq('fase', fase).order('fecha', {ascending: true});
     const { data: myBets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
+
     container.innerHTML = '';
     const ahora = new Date();
-    matches?.forEach(m => {
+
+    matches.forEach(m => {
         const bet = myBets?.find(b => b.partido_id === m.id);
+        const horaLimpia = m.hora ? m.hora.replace(' ', '') : "12:00";
+        const fechaPartido = new Date(`${m.fecha}T${horaLimpia}:00`);
+        const tiempoCerrado = (fechaPartido - ahora) < 3600000;
         const yaAposto = bet !== undefined;
+        const bloqueado = yaAposto || tiempoCerrado;
+
         container.innerHTML += `
             <div class="match-card">
-                <div class="team left"><span>${m.equipo_a}</span><img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png"></div>
-                <div class="score-container">
-                    <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${yaAposto ? 'disabled' : ''}>
-                    <span>VS</span>
-                    <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${yaAposto ? 'disabled' : ''}>
+                <div class="team left">
+                    <span>${m.equipo_a}</span>
+                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_a)}.png">
                 </div>
-                <div class="team right"><img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png"><span>${m.equipo_b}</span></div>
+                <div class="score-container">
+                    <input type="number" class="score-box" id="a-${m.id}" value="${bet?.goles_a_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
+                    <span style="font-weight:bold; color:#444">VS</span>
+                    <input type="number" class="score-box" id="b-${m.id}" value="${bet?.goles_b_user ?? ''}" ${bloqueado ? 'disabled' : ''}>
+                </div>
+                <div class="team right">
+                    <img class="flag" src="https://flagcdn.com/w80/${getIso(m.equipo_b)}.png">
+                    <span>${m.equipo_b}</span>
+                </div>
+                <div class="status-label">${yaAposto ? '<span class="status-ok">✓ PRONÓSTICO ASEGURADO</span>' : ''}</div>
             </div>`;
     });
 }
 
 async function savePredictions() {
     const inputs = document.querySelectorAll('.score-box:not(:disabled)');
-    if (inputs.length === 0) return alert("Nada que guardar.");
+    if (inputs.length === 0) return alert("No hay pronósticos nuevos para guardar o el tiempo expiró.");
+
     const predictions = [];
     const idsProcessed = new Set();
+
     inputs.forEach(input => {
         const id = input.id.split('-')[1];
         if (!idsProcessed.has(id)) {
-            const gA = document.getElementById(`a-${id}`).value;
-            const gB = document.getElementById(`b-${id}`).value;
-            if (gA !== '' && gB !== '') {
-                predictions.push({ perfil_id: window.currentUser.id, partido_id: id, goles_a_user: parseInt(gA), goles_b_user: parseInt(gB) });
+            const golesA = document.getElementById(`a-${id}`).value;
+            const golesB = document.getElementById(`b-${id}`).value;
+            if (golesA !== '' && golesB !== '') {
+                predictions.push({ perfil_id: window.currentUser.id, partido_id: id, goles_a_user: parseInt(golesA), goles_b_user: parseInt(golesB) });
                 idsProcessed.add(id);
             }
         }
     });
+
+    if (predictions.length === 0) return alert("Ingresa resultados válidos.");
+
     const { error } = await _sb.from('pronosticos').insert(predictions);
-    if (error) alert("Error."); else { alert("Guardado!"); loadMatches(currentFase); }
+    if (error) alert("Error al guardar.");
+    else { alert("¡Pronósticos guardados!"); loadMatches(currentFase); }
 }
 
 function showTab(fase) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if (event) event.target.classList.add('active');
-    const bracketView = document.getElementById('bracket-view');
-    const matchList = document.getElementById('match-list');
-    const rankingList = document.getElementById('ranking-list');
-    const saveBtn = document.getElementById('save-btn');
-    if (fase === 'Bracket') {
-        matchList.style.display = 'none'; rankingList.style.display = 'none'; saveBtn.style.display = 'none'; bracketView.style.display = 'block';
-        renderBracket();
-    } else if (fase === 'Ranking') {
-        matchList.style.display = 'none'; bracketView.style.display = 'none'; saveBtn.style.display = 'none'; rankingList.style.display = 'block';
-        loadRanking();
-    } else {
-        bracketView.style.display = 'none'; rankingList.style.display = 'none'; saveBtn.style.display = 'block'; matchList.style.display = 'block';
-        loadMatches(fase);
-    }
-}
-
-async function renderBracket() {
-    const container = document.getElementById('groups-summary');
-    container.innerHTML = 'Calculando...';
-    const { data: matches } = await _sb.from('partidos').select('*').eq('fase', 'Grupos');
-    const { data: bets } = await _sb.from('pronosticos').select('*').eq('perfil_id', window.currentUser.id);
-    const grupos = {};
-    matches?.forEach(m => { if (!grupos[m.grupo]) grupos[m.grupo] = []; grupos[m.grupo].push(m); });
-    container.innerHTML = '';
-    const lideres = {};
-    Object.keys(grupos).sort().forEach(g => {
-        const s = {};
-        grupos[g].forEach(m => {
-            const b = bets?.find(x => x.partido_id === m.id);
-            if (!s[m.equipo_a]) s[m.equipo_a] = { pts: 0, dg: 0 };
-            if (!s[m.equipo_b]) s[m.equipo_b] = { pts: 0, dg: 0 };
-            if (b) {
-                const ga = b.goles_a_user; const gb = b.goles_b_user;
-                s[m.equipo_a].dg += (ga - gb); s[m.equipo_b].dg += (gb - ga);
-                if (ga > gb) s[m.equipo_a].pts += 3; else if (gb > ga) s[m.equipo_b].pts += 3; else { s[m.equipo_a].pts += 1; s[m.equipo_b].pts += 1; }
-            }
-        });
-        const tabla = Object.entries(s).sort((a, b) => b[1].pts - a[1].pts || b[1].dg - a[1].dg);
-        lideres[g] = { p: tabla[0]?.[0] || '?', s: tabla[1]?.[0] || '?' };
-        container.innerHTML += `<div class="group-card"><h3>GRUPO ${g}</h3><table class="mini-table">${tabla.map((t, i) => `<tr><td>${i+1}</td><td>${t[0].toUpperCase()}</td><td>${t[1].pts}</td></tr>`).join('')}</table></div>`;
-    });
-    const fill = (id, t1, t2) => { document.getElementById(id).innerHTML = `<div class="team-row"><span>${t1}</span><span>-</span></div><div class="team-row"><span>${t2}</span><span>-</span></div>`; };
-    fill('oct-1', lideres['A']?.p, lideres['B']?.s); fill('oct-2', lideres['C']?.p, lideres['D']?.s);
-    fill('oct-3', lideres['E']?.p, lideres['F']?.s); fill('oct-4', lideres['G']?.p, lideres['H']?.s);
-    fill('oct-5', lideres['B']?.p, lideres['A']?.s); fill('oct-6', lideres['D']?.p, lideres['C']?.s);
-    fill('oct-7', lideres['F']?.p, lideres['E']?.s); fill('oct-8', lideres['H']?.p, lideres['G']?.s);
-    document.getElementById('final-match').innerHTML = `<div class="team-row"><span>FINALISTA 1</span></div><div class="team-row"><span>FINALISTA 2</span></div>`;
+    
+    if (fase === 'Ranking') loadRanking();
+    else loadMatches(fase);
 }
 
 async function loadRanking() {
-    const { data: perfiles } = await _sb.from('perfiles').select('nombre, puntos_totales').order('puntos_totales', { ascending: false });
-    document.getElementById('ranking-body').innerHTML = perfiles?.map((p, i) => `<tr><td>${i+1}</td><td>${p.nombre.toUpperCase()}</td><td>${p.puntos_totales || 0}</td></tr>`).join('') || '';
+    const list = document.getElementById('match-list');
+    const ranking = document.getElementById('ranking-list');
+    const saveBtn = document.getElementById('save-btn');
+    const body = document.getElementById('ranking-body');
+
+    list.style.display = 'none';
+    saveBtn.style.display = 'none';
+    ranking.style.display = 'block';
+    
+    body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-cyan)">ACCEDIENDO A LA RED...</td></tr>';
+
+    try {
+        // CORRECCIÓN AQUÍ: Se usa puntos_totales
+        const { data: perfiles, error } = await _sb
+            .from('perfiles')
+            .select('nombre, puntos_totales')
+            .order('puntos_totales', { ascending: false });
+
+        if (error) throw error;
+
+        if (!perfiles || perfiles.length === 0) {
+            body.innerHTML = '<tr><td colspan="3">SIN JUGADORES ACTIVOS</td></tr>';
+            return;
+        }
+
+        body.innerHTML = perfiles.map((p, i) => {
+            let medalla = i + 1;
+            if(i === 0) medalla = '🥇';
+            if(i === 1) medalla = '🥈';
+            if(i === 2) medalla = '🥉';
+            
+            return `
+                <tr>
+                    <td style="font-family:'Orbitron'; font-weight:bold;">${medalla}</td>
+                    <td style="color:var(--neon-cyan); text-align:left; padding-left:20px;">${p.nombre.toUpperCase()}</td>
+                    <td style="font-weight:bold; color:var(--neon-green)">${p.puntos_totales || 0}</td>
+                </tr>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Error en Ranking:", err);
+        body.innerHTML = '<tr><td colspan="3" style="color:var(--neon-red)">ERROR: REVISA LA COLUMNA puntos_totales</td></tr>';
+    }
 }
 
 async function loadPreview() {
-    const { data } = await _sb.from('partidos').select('*').eq('fase', 'Grupos').limit(3);
-    const container = document.getElementById('preview-list');
-    if(data && container) container.innerHTML = data.map(m => `<div style="font-size:10px; margin-bottom:5px;">${m.equipo_a} vs ${m.equipo_b}</div>`).join('');
+    try {
+        const { data } = await _sb.from('partidos').select('*').eq('fase', 'Grupos').limit(3);
+        const container = document.getElementById('preview-list');
+        if(data && container) {
+            container.innerHTML = data.map(m => `
+                <div style="font-size:11px; margin-bottom:10px; border-bottom:1px solid #222; padding-bottom:5px;">
+                    ${m.equipo_a} vs ${m.equipo_b} <br> <span style="color:var(--neon-purple)">${m.fecha}</span>
+                </div>`).join('');
+        }
+    } catch (e) { console.log("Error en preview"); }
 }
