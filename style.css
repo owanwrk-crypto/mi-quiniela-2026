@@ -74,3 +74,9 @@ input {
 .score-box { width: 45px; height: 45px; text-align: center; font-size: 20px; border-radius: 8px; }
 .flag { width: 30px; margin: 0 10px; }
 .btn-float { position: fixed; bottom: 20px; right: 20px; padding: 15px 30px; border-radius: 50px; background: var(--neon-cyan); border: none; font-weight: bold; cursor: pointer; }
+.match-card.locked {
+    opacity: 0.6;
+    filter: grayscale(0.4);
+    border-left: 4px solid #ff4444;
+    pointer-events: none; /* Evita cualquier interacción */
+}
