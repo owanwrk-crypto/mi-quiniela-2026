@@ -299,3 +299,106 @@ ${rows}
 })
 
 }
+async function loadRanking(){
+
+const tbody = document.getElementById("ranking-body")
+
+tbody.innerHTML = "<tr><td colspan='5'>Cargando ranking...</td></tr>"
+
+const {data:perfiles} = await _sb
+.from("perfiles")
+.select("*")
+
+const {data:matches} = await _sb
+.from("partidos")
+.select("*")
+
+const {data:pronosticos} = await _sb
+.from("pronosticos")
+.select("*")
+
+let ranking = []
+
+perfiles.forEach(p=>{
+
+let puntos = 0
+let total = 0
+let aciertos = 0
+
+const bets = pronosticos.filter(x=>x.perfil_id === p.id)
+
+bets.forEach(b=>{
+
+const m = matches.find(x=>x.id === b.partido_id)
+
+if(!m) return
+if(m.goles_a == null || m.goles_b == null) return
+
+total++
+
+if(b.goles_a_user == m.goles_a && b.goles_b_user == m.goles_b){
+
+puntos += 3
+aciertos++
+
+}else{
+
+let real=""
+let user=""
+
+if(m.goles_a > m.goles_b) real="A"
+else if(m.goles_b > m.goles_a) real="B"
+else real="E"
+
+if(b.goles_a_user > b.goles_b_user) user="A"
+else if(b.goles_b_user > b.goles_a_user) user="B"
+else user="E"
+
+if(real === user){
+
+puntos += 1
+aciertos++
+
+}
+
+}
+
+})
+
+let porcentaje = total ? Math.round((aciertos/total)*100) : 0
+
+ranking.push({
+nombre:p.nombre,
+puntos:puntos,
+porcentaje:porcentaje
+})
+
+})
+
+ranking.sort((a,b)=> b.puntos - a.puntos)
+
+tbody.innerHTML=""
+
+ranking.forEach((r,i)=>{
+
+let medal=""
+
+if(i==0) medal="🥇"
+if(i==1) medal="🥈"
+if(i==2) medal="🥉"
+
+tbody.innerHTML+=`
+
+<tr>
+<td>${i+1}</td>
+<td>${medal}</td>
+<td>${r.nombre}</td>
+<td>${r.puntos}</td>
+<td>${r.porcentaje}%</td>
+</tr>
+
+`
+
+})
+
+}
