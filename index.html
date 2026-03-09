@@ -19,12 +19,9 @@
 <body>
 
 <header>
-
 <h1>MUNDIAL 2026</h1>
 <p class="subtitle">Sistema de Pronósticos</p>
-
 </header>
-
 
 <!-- LOGIN -->
 
@@ -37,16 +34,16 @@
 <h2>ACCESO</h2>
 
 <div class="input-group">
-<label for="login-name">Usuario</label>
-<input id="login-name" type="text" autocomplete="off">
+<label>Usuario</label>
+<input id="login-name" type="text">
 </div>
 
 <div class="input-group">
-<label for="login-pin">PIN</label>
-<input id="login-pin" type="password" autocomplete="off">
+<label>PIN</label>
+<input id="login-pin" type="password">
 </div>
 
-<button class="btn-login" onclick="handleLogin()">
+<button onclick="handleLogin()" class="btn-login">
 ENTRAR
 </button>
 
@@ -57,82 +54,59 @@ ENTRAR
 </div>
 
 
-
 <!-- SISTEMA PRINCIPAL -->
 
 <div id="main-section" style="display:none">
 
 <div class="container">
 
-
-<!-- BARRA USUARIO -->
-
 <div class="user-bar">
-
 <div id="user-display"></div>
 
 <button class="btn-exit" onclick="location.reload()">
 SALIR
 </button>
-
 </div>
 
 
-
-<!-- TABS -->
-
 <div class="tabs-container">
 
-<button class="tab-btn active" onclick="showTab('Grupos')">
+<button onclick="showTab('Grupos')">
 🏆 GRUPOS
 </button>
 
-<button class="tab-btn" onclick="showTab('Ranking')">
+<button onclick="showTab('Ranking')">
 🥇 RANKING
 </button>
 
 </div>
 
 
-
 <!-- GRUPOS -->
 
 <div id="wall-chart-section">
 
-<div class="wall-header">
-
-<div class="fifa-title">
-FIFA WORLD CUP
-</div>
-
-<div class="united-title">
-UNITED 2026
-</div>
+<div id="groups-wall-container"></div>
 
 </div>
-
-<div id="groups-wall-container" class="groups-wall-grid"></div>
-
-</div>
-
 
 
 <!-- RANKING -->
 
 <div id="ranking-list" style="display:none">
 
-<table class="ranking-table">
+<div id="top3-podium"></div>
+
+<table>
 
 <thead>
-
 <tr>
 <th>POS</th>
-<th>🥇</th>
+<th></th>
 <th>JUGADOR</th>
 <th>PUNTOS</th>
-<th>% ACIERTO</th>
+<th>%</th>
 </tr>
-
 </thead>
 
 <tbody id="ranking-body">
@@ -148,7 +122,6 @@ UNITED 2026
 </div>
 
 
-
 <button id="save-btn" onclick="savePredictions()">
 💾 GUARDAR PRONÓSTICOS
 </button>
@@ -160,5 +133,4 @@ UNITED 2026
 <script src="app.js"></script>
 
 </body>
-
 </html>
