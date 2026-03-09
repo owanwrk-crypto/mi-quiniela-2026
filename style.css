@@ -22,19 +22,35 @@ overflow-x:hidden;
 /* PARTICULAS ANIMADAS */
 
 body::before{
+
 content:"";
+
 position:fixed;
+
 width:200%;
 height:200%;
+
 background-image:radial-gradient(white 1px,transparent 1px);
+
 background-size:40px 40px;
+
 opacity:.05;
+
 animation:starsMove 120s linear infinite;
+
+/* ESTA LINEA PERMITE HACER CLICK EN TODA LA WEB */
+
+pointer-events:none;
+
+z-index:-1;
+
 }
 
 @keyframes starsMove{
+
 from{transform:translate(0,0);}
 to{transform:translate(-100px,-200px);}
+
 }
 
 /* HEADER */
@@ -59,7 +75,7 @@ opacity:.7;
 letter-spacing:3px;
 }
 
-/* LOGIN SECTION */
+/* LOGIN */
 
 #login-section{
 display:flex;
@@ -184,7 +200,7 @@ border-color:var(--accent);
 color:var(--accent);
 }
 
-/* GROUPS */
+/* GRUPOS */
 
 #wall-chart-section{
 background:#081425;
@@ -274,7 +290,7 @@ color:black;
 font-weight:bold;
 }
 
-/* QUITAR FLECHAS INPUT NUMBER */
+/* QUITAR FLECHAS */
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{
@@ -288,7 +304,7 @@ appearance:textfield;
 -moz-appearance:textfield;
 }
 
-/* SAVE BUTTON */
+/* BOTON GUARDAR */
 
 #save-btn{
 margin-top:25px;
