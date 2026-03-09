@@ -19,6 +19,8 @@ min-height:100vh;
 overflow-x:hidden;
 }
 
+/* ESTRELLAS FONDO */
+
 body::before{
 content:"";
 position:fixed;
@@ -36,6 +38,8 @@ z-index:-1;
 from{transform:translate(0,0);}
 to{transform:translate(-100px,-200px);}
 }
+
+/* HEADER */
 
 header{
 text-align:center;
@@ -56,6 +60,8 @@ text-shadow:
 opacity:.7;
 letter-spacing:3px;
 }
+
+/* LOGIN */
 
 #login-section{
 display:flex;
@@ -115,6 +121,8 @@ color:white;
 font-size:16px;
 }
 
+/* BOTONES */
+
 .btn-login{
 width:100%;
 margin-top:15px;
@@ -134,6 +142,17 @@ transform:scale(1.05);
 box-shadow:0 0 20px var(--accent);
 }
 
+.btn-exit{
+background:#111;
+border:1px solid var(--border);
+color:white;
+padding:8px 15px;
+border-radius:6px;
+cursor:pointer;
+}
+
+/* CONTENEDOR */
+
 .container{
 max-width:1200px;
 margin:auto;
@@ -146,14 +165,7 @@ justify-content:space-between;
 margin-bottom:20px;
 }
 
-.btn-exit{
-background:#111;
-border:1px solid var(--border);
-color:white;
-padding:8px 15px;
-border-radius:6px;
-cursor:pointer;
-}
+/* TABS */
 
 .tabs-container{
 display:flex;
@@ -175,6 +187,8 @@ font-family:'Orbitron';
 border-color:var(--accent);
 color:var(--accent);
 }
+
+/* WALL CHART */
 
 #wall-chart-section{
 background:#081425;
@@ -220,12 +234,16 @@ margin-bottom:15px;
 color:var(--accent);
 }
 
+/* PARTIDOS */
+
 .wall-match{
 display:flex;
 align-items:center;
 justify-content:space-between;
 margin-bottom:10px;
 font-size:14px;
+padding:4px;
+border-radius:4px;
 }
 
 .team-left,
@@ -264,6 +282,8 @@ color:black;
 font-weight:bold;
 }
 
+/* QUITAR FLECHAS INPUT NUMBER */
+
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{
 -webkit-appearance:none;
@@ -272,9 +292,9 @@ margin:0;
 
 input[type=number]{
 appearance:textfield;
--webkit-appearance:none;
--moz-appearance:textfield;
 }
+
+/* BOTON GUARDAR */
 
 #save-btn{
 margin-top:25px;
@@ -289,36 +309,57 @@ cursor:pointer;
 font-family:'Orbitron';
 }
 
+/* RANKING */
+
 .ranking-table{
 width:100%;
 border-collapse:collapse;
+margin-top:20px;
+background:#0f1b2d;
+border-radius:10px;
+overflow:hidden;
 }
 
 .ranking-table th{
+background:#081425;
+color:var(--accent);
+font-family:'Orbitron';
+letter-spacing:2px;
+padding:12px;
 border-bottom:1px solid var(--border);
-padding:10px;
 }
 
 .ranking-table td{
-padding:10px;
+padding:12px;
 text-align:center;
 border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
+.ranking-table tr:hover{
+background:#13233c;
+}
+
+/* PODIO */
+
 .ranking-table tr:nth-child(1){
-background:#ffe066;
+background:linear-gradient(90deg,#ffd700,#ffea70);
 color:black;
+font-weight:bold;
 }
 
 .ranking-table tr:nth-child(2){
-background:#e6e6e6;
+background:linear-gradient(90deg,#c0c0c0,#e6e6e6);
 color:black;
+font-weight:bold;
 }
 
 .ranking-table tr:nth-child(3){
-background:#f4a261;
+background:linear-gradient(90deg,#cd7f32,#e6a86a);
 color:black;
+font-weight:bold;
 }
+
+/* RESULTADOS */
 
 .correct{
 background:#1a3f1a;

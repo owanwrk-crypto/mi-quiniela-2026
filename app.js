@@ -385,10 +385,27 @@ async function loadRanking(){
 
 const body=document.getElementById("ranking-body")
 
-const {data}=await _sb
+body.innerHTML="Cargando..."
+
+const {data,error}=await _sb
 .from("perfiles")
 .select("nombre,puntos,porcentaje_acierto")
 .order("puntos",{ascending:false})
+
+if(error){
+
+console.log(error)
+body.innerHTML="<tr><td colspan='5'>Error cargando ranking</td></tr>"
+return
+
+}
+
+if(!data || data.length===0){
+
+body.innerHTML="<tr><td colspan='5'>No hay datos en el ranking</td></tr>"
+return
+
+}
 
 body.innerHTML=data.map((p,i)=>{
 
@@ -408,9 +425,9 @@ return `
 
 <td>${p.nombre}</td>
 
-<td>${p.puntos || 0}</td>
+<td>${p.puntos ?? 0}</td>
 
-<td>${p.porcentaje_acierto || 0}%</td>
+<td>${p.porcentaje_acierto ?? 0}%</td>
 
 </tr>
 
