@@ -387,21 +387,35 @@ const body=document.getElementById("ranking-body")
 
 const {data}=await _sb
 .from("perfiles")
-.select("nombre,puntos")
+.select("nombre,puntos,porcentaje_acierto")
 .order("puntos",{ascending:false})
 
-body.innerHTML=data.map((p,i)=>`
+body.innerHTML=data.map((p,i)=>{
+
+let medal=""
+
+if(i===0) medal="🥇"
+else if(i===1) medal="🥈"
+else if(i===2) medal="🥉"
+
+return `
 
 <tr>
 
 <td>${i+1}</td>
 
+<td>${medal}</td>
+
 <td>${p.nombre}</td>
 
 <td>${p.puntos || 0}</td>
 
+<td>${p.porcentaje_acierto || 0}%</td>
+
 </tr>
 
-`).join("")
+`
+
+}).join("")
 
 }
