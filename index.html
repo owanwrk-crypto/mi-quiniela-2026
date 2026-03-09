@@ -19,9 +19,12 @@
 <body>
 
 <header>
+
 <h1>MUNDIAL 2026</h1>
 <p class="subtitle">Sistema de Pronósticos</p>
+
 </header>
+
 
 <!-- LOGIN -->
 
@@ -34,16 +37,16 @@
 <h2>ACCESO</h2>
 
 <div class="input-group">
-<label>Usuario</label>
-<input id="login-name" type="text">
+<label for="login-name">Usuario</label>
+<input id="login-name" type="text" autocomplete="off">
 </div>
 
 <div class="input-group">
-<label>PIN</label>
-<input id="login-pin" type="password">
+<label for="login-pin">PIN</label>
+<input id="login-pin" type="password" autocomplete="off">
 </div>
 
-<button onclick="handleLogin()" class="btn-login">
+<button class="btn-login" onclick="handleLogin()">
 ENTRAR
 </button>
 
@@ -54,59 +57,83 @@ ENTRAR
 </div>
 
 
+
 <!-- SISTEMA PRINCIPAL -->
 
 <div id="main-section" style="display:none">
 
 <div class="container">
 
+
+<!-- BARRA USUARIO -->
+
 <div class="user-bar">
+
 <div id="user-display"></div>
 
 <button class="btn-exit" onclick="location.reload()">
 SALIR
 </button>
+
 </div>
 
 
+
+<!-- TABS -->
+
 <div class="tabs-container">
 
-<button onclick="showTab('Grupos')">
+<button class="tab-btn active" onclick="showTab('Grupos')">
 🏆 GRUPOS
 </button>
 
-<button onclick="showTab('Ranking')">
+<button class="tab-btn" onclick="showTab('Ranking')">
 🥇 RANKING
 </button>
 
 </div>
 
 
+
 <!-- GRUPOS -->
 
 <div id="wall-chart-section">
 
-<div id="groups-wall-container"></div>
+<div class="wall-header">
+
+<div class="fifa-title">
+FIFA WORLD CUP
+</div>
+
+<div class="united-title">
+UNITED 2026
+</div>
 
 </div>
+
+<div id="groups-wall-container" class="groups-wall-grid"></div>
+
+</div>
+
 
 
 <!-- RANKING -->
 
 <div id="ranking-list" style="display:none">
+    <div id="top3-podium" class="podium"></div>
 
-<div id="top3-podium"></div>
-
-<table>
+<table class="ranking-table">
 
 <thead>
+
 <tr>
 <th>POS</th>
-<th></th>
+<th>🥇</th>
 <th>JUGADOR</th>
 <th>PUNTOS</th>
-<th>%</th>
+<th>% ACIERTO</th>
 </tr>
+
 </thead>
 
 <tbody id="ranking-body">
@@ -122,6 +149,7 @@ SALIR
 </div>
 
 
+
 <button id="save-btn" onclick="savePredictions()">
 💾 GUARDAR PRONÓSTICOS
 </button>
@@ -133,4 +161,5 @@ SALIR
 <script src="app.js"></script>
 
 </body>
+
 </html>
