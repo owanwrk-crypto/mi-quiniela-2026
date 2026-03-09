@@ -3,17 +3,20 @@ const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
 
 const _sb = supabase.createClient(URL_SB, KEY_SB);
 
-let currentFase='Grupos';
+let currentFase = 'Grupos';
+window.currentUser = null;
 
-window.currentUser=null;
 
-
+/* =========================
+   FUNCION BANDERAS
+========================= */
 
 function getFlag(team){
 
 const flags={
 
 "Mexico":"mx",
+"México":"mx",
 "Estados Unidos":"us",
 "Canadá":"ca",
 
@@ -86,11 +89,13 @@ return flags[team] || "un"
 }
 
 
+/* =========================
+   LOGIN
+========================= */
 
 async function handleLogin(){
 
 const name=document.getElementById('login-name').value;
-
 const pin=document.getElementById('login-pin').value;
 
 const {data:user}=await _sb
@@ -103,7 +108,6 @@ const {data:user}=await _sb
 if(!user){
 
 alert("Usuario incorrecto");
-
 return;
 
 }
@@ -111,7 +115,6 @@ return;
 window.currentUser=user;
 
 document.getElementById('login-section').style.display='none';
-
 document.getElementById('main-section').style.display='block';
 
 document.getElementById('user-display').innerText=
@@ -122,17 +125,18 @@ renderWallChart();
 }
 
 
+/* =========================
+   TABS
+========================= */
 
 function showTab(tab){
 
 document.getElementById('wall-chart-section').style.display='none';
-
 document.getElementById('ranking-list').style.display='none';
 
 if(tab==='Ranking'){
 
 document.getElementById('ranking-list').style.display='block';
-
 loadRanking();
 
 }
@@ -140,7 +144,6 @@ loadRanking();
 else{
 
 document.getElementById('wall-chart-section').style.display='block';
-
 renderWallChart();
 
 }
@@ -148,6 +151,9 @@ renderWallChart();
 }
 
 
+/* =========================
+   MOSTRAR PARTIDOS
+========================= */
 
 async function renderWallChart(){
 
@@ -168,7 +174,6 @@ let grupos={};
 matches.forEach(m=>{
 
 if(!grupos[m.grupo]) grupos[m.grupo]=[];
-
 grupos[m.grupo].push(m);
 
 });
@@ -189,7 +194,7 @@ rows+=`
 
 <div class="team-left">
 
-<img class="flag" src="${bandera(m.equipo_a)}">
+<img class="flag" src="https://flagcdn.com/w40/${getFlag(m.equipo_a)}.png">
 
 ${m.equipo_a}
 
@@ -217,7 +222,7 @@ value="${b?.goles_b_user ?? ''}">
 
 ${m.equipo_b}
 
-<img class="flag" src="${bandera(m.equipo_b)}">
+<img class="flag" src="https://flagcdn.com/w40/${getFlag(m.equipo_b)}.png">
 
 </div>
 
@@ -244,13 +249,15 @@ ${rows}
 }
 
 
+/* =========================
+   GUARDAR PRONOSTICOS
+========================= */
 
 async function savePredictions(){
 
 const inputs=document.querySelectorAll('.wall-input');
 
 let predictions=[];
-
 let ids=new Set();
 
 inputs.forEach(i=>{
@@ -260,7 +267,6 @@ const id=i.dataset.id;
 if(!ids.has(id)){
 
 const a=document.querySelector(`.wall-input[data-id="${id}"][data-side="a"]`).value;
-
 const b=document.querySelector(`.wall-input[data-id="${id}"][data-side="b"]`).value;
 
 if(a!=='' && b!==''){
@@ -291,6 +297,9 @@ alert("Pronósticos guardados");
 }
 
 
+/* =========================
+   RANKING
+========================= */
 
 async function loadRanking(){
 
@@ -306,9 +315,7 @@ body.innerHTML=data.map((p,i)=>`
 <tr>
 
 <td>${i+1}</td>
-
 <td>${p.nombre}</td>
-
 <td>${p.puntos || 0}</td>
 
 </tr>
