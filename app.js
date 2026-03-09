@@ -8,6 +8,8 @@ window.currentUser = null
 let quinielaGuardada = false
 
 
+// LOGIN
+
 async function handleLogin(){
 
 const name = document.getElementById("login-name").value
@@ -40,6 +42,8 @@ showTab("Grupos")
 
 
 
+// CAMBIO DE PESTAÑAS
+
 function showTab(tab){
 
 document.getElementById("wall-chart-section").style.display="none"
@@ -48,13 +52,13 @@ document.getElementById("ranking-list").style.display="none"
 if(tab==="Grupos"){
 
 document.getElementById("wall-chart-section").style.display="block"
+renderWallChart()
 
 }
 
 if(tab==="Ranking"){
 
 document.getElementById("ranking-list").style.display="block"
-
 loadRanking()
 
 }
@@ -62,6 +66,131 @@ loadRanking()
 }
 
 
+
+// CARGAR PARTIDOS (GRUPOS)
+
+async function renderWallChart(){
+
+const container = document.getElementById("groups-wall-container")
+
+container.innerHTML="Cargando partidos..."
+
+const { data:matches, error } = await _sb
+.from("partidos")
+.select("*")
+.order("grupo")
+
+if(error){
+
+console.log(error)
+container.innerHTML="Error cargando partidos"
+return
+
+}
+
+let grupos = {}
+
+matches.forEach(m=>{
+
+if(!grupos[m.grupo]) grupos[m.grupo]=[]
+grupos[m.grupo].push(m)
+
+})
+
+container.innerHTML=""
+
+Object.keys(grupos).forEach(g=>{
+
+let rows=""
+
+grupos[g].forEach(m=>{
+
+rows+=`
+
+<div class="match">
+
+<div class="team">
+${m.equipo_a}
+</div>
+
+<div class="score">
+<input type="number" class="score-input" data-id="${m.id}" data-side="a">
+-
+<input type="number" class="score-input" data-id="${m.id}" data-side="b">
+</div>
+
+<div class="team">
+${m.equipo_b}
+</div>
+
+</div>
+
+`
+
+})
+
+container.innerHTML+=`
+
+<div class="group">
+
+<h3>GRUPO ${g}</h3>
+
+${rows}
+
+</div>
+
+`
+
+})
+
+}
+
+
+
+// GUARDAR PRONOSTICOS
+
+async function savePredictions(){
+
+const inputs = document.querySelectorAll(".score-input")
+
+let bets={}
+
+inputs.forEach(i=>{
+
+const id=i.dataset.id
+const side=i.dataset.side
+
+if(!bets[id]) bets[id]={}
+
+bets[id][side]=i.value
+
+})
+
+for(const matchId in bets){
+
+const a=bets[matchId].a
+const b=bets[matchId].b
+
+if(a==="" || b==="") continue
+
+await _sb.from("pronosticos").insert({
+
+perfil_id:window.currentUser.id,
+partido_id:matchId,
+goles_a_user:a,
+goles_b_user:b
+
+})
+
+}
+
+alert("Pronósticos guardados")
+
+}
+
+
+
+// CARGAR RANKING
 
 async function loadRanking(){
 
@@ -144,6 +273,8 @@ ranking.sort((a,b)=> b.puntos - a.puntos)
 
 
 
+// PODIUM
+
 podium.innerHTML=""
 
 ranking.slice(0,3).forEach((p,i)=>{
@@ -152,7 +283,7 @@ let medal=["🥇","🥈","🥉"][i]
 
 podium.innerHTML+=`
 
-<div>
+<div class="podium-player">
 <div>${medal}</div>
 <div>${p.nombre}</div>
 <div>${p.puntos} pts</div>
@@ -163,6 +294,8 @@ podium.innerHTML+=`
 })
 
 
+
+// TABLA
 
 tbody.innerHTML=""
 
