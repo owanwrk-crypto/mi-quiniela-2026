@@ -9,38 +9,79 @@ window.currentUser=null;
 
 
 
-function bandera(pais){
+function getFlag(team){
 
-const map={
+const flags={
+
+"Mexico":"mx",
+"Estados Unidos":"us",
+"Canadá":"ca",
 
 "Argentina":"ar",
 "Brasil":"br",
 "Uruguay":"uy",
+"Paraguay":"py",
+"Colombia":"co",
+"Ecuador":"ec",
+"Bolivia":"bo",
+
 "España":"es",
 "Francia":"fr",
 "Alemania":"de",
 "Inglaterra":"gb",
+"Escocia":"gb-sct",
+"Gales":"gb-wls",
+"Irlanda":"ie",
+"Irlanda del Norte":"gb-nir",
 "Portugal":"pt",
-"Estados Unidos":"us",
-"México":"mx",
-"Canadá":"ca",
-"Japón":"jp",
-"Australia":"au",
-"Países Bajos":"nl",
-"Bélgica":"be",
 "Croacia":"hr",
 "Suiza":"ch",
-"Senegal":"sn",
+"Austria":"at",
+"Bélgica":"be",
+"Países Bajos":"nl",
+"Noruega":"no",
+"Dinamarca":"dk",
+"Suecia":"se",
+"Polonia":"pl",
+"Ucrania":"ua",
+"Albania":"al",
+"República Checa":"cz",
+"Eslovaquia":"sk",
+"Rumania":"ro",
+"Turquía":"tr",
+"Kosovo":"xk",
+
 "Marruecos":"ma",
 "Egipto":"eg",
-"Argelia":"dz",
-"Colombia":"co",
-"Paraguay":"py",
-"Ecuador":"ec"
+"Sudáfrica":"za",
+"Costa de Marfil":"ci",
+"Cabo Verde":"cv",
+"Senegal":"sn",
+"Ghana":"gh",
+"RD de Congo":"cd",
 
-};
+"Japón":"jp",
+"Corea del Sur":"kr",
+"República de Corea":"kr",
+"Irán":"ir",
+"RI de Irán":"ir",
+"Arabia Saudí":"sa",
+"Catar":"qa",
+"Uzbekistán":"uz",
+"Jordania":"jo",
+"Irak":"iq",
 
-return `https://flagcdn.com/w40/${map[pais] || 'un'}.png`;
+"Australia":"au",
+"Nueva Zelanda":"nz",
+"Nueva Caledonia":"nc",
+
+"Haití":"ht",
+"Curazao":"cw",
+"Panamá":"pa"
+
+}
+
+return flags[team] || "un"
 
 }
 
