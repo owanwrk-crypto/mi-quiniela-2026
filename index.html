@@ -1,89 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiniela Mundialista 2026 🎯</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Quiniela Mundial 2026 ⚽</title>
+
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/53/53283.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
+
 <body>
-    <header>
-        <h1>MUNDIAL 2026</h1>
-        <p class="subtitle">SISTEMA OFICIAL DE PRONÓSTICOS</p>
-    </header>
 
-    <div id="login-section">
-        <div class="login-page-wrapper">
-            <div class="login-card">
-                <h2>ACCESO JUGADOR</h2>
-                <div class="input-group">
-                    <label>Nombre de Usuario</label>
-                    <input type="text" id="login-name" placeholder="Ej: Juan Perez">
-                </div>
-                <div class="input-group">
-                    <label>PIN de Seguridad</label>
-                    <input type="password" id="login-pin" placeholder="****" maxlength="4">
-                </div>
-                <button class="btn-login" id="login-btn" onclick="handleLogin()">ENTRAR A JUGAR</button>
-            </div>
-            <div class="sidebar-preview">
-                <h3>PRÓXIMOS PARTIDOS</h3>
-                <div id="preview-list"></div>
-            </div>
-        </div>
-    </div>
+<header>
 
-    <div id="main-section" style="display: none;">
-        <div class="container">
-            <div class="user-bar">
-                <div id="user-display">JUGADOR: ---</div>
-                <button class="btn-exit" onclick="location.reload()">SALIR</button>
-            </div>
+<h1>⚽ MUNDIAL 2026</h1>
+<p class="subtitle">QUINIELA OFICIAL</p>
 
-            <div class="tabs-container">
-                <button class="tab-btn active" onclick="showTab('Grupos')">GRUPOS</button>
-                <button class="tab-btn" onclick="showTab('WallChart')">📅 WALL CHART</button>
-                <button class="tab-btn" onclick="showTab('Octavos')">OCTAVOS</button>
-                <button class="tab-btn" onclick="showTab('Cuartos')">CUARTOS</button>
-                <button class="tab-btn" onclick="showTab('Semis')">SEMIS</button>
-                <button class="tab-btn" onclick="showTab('Final')">FINAL</button>
-                <button class="tab-btn tab-ranking" onclick="showTab('Ranking')">🏆 RANKING</button>
-            </div>
+</header>
 
-            <div id="match-list"></div>
 
-            <div id="wall-chart-section" style="display: none;">
-                <div class="wall-header">
-                    <h2 class="fifa-title">FIFA WORLD CUP</h2>
-                    <h1 class="united-title">UNITED 2026</h1>
-                    <p class="instruction-text">ENTER YOUR PREDICTIONS BELOW</p>
-                </div>
-                <div class="groups-wall-grid" id="groups-wall-container"></div>
-                
-                <div class="bracket-separator"><span>KNOCKOUT STAGE - ROUND OF 32</span></div>
-                <div id="wall-bracket-flow" class="wall-bracket-content"></div>
-            </div>
+<!-- LOGIN -->
 
-            <div id="ranking-list" style="display: none;">
-                <table class="ranking-table">
-                    <thead>
-                        <tr>
-                            <th>POS</th>
-                            <th>JUGADOR</th>
-                            <th>PTS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ranking-body"></tbody>
-                </table>
-            </div>
+<div id="login-section">
 
-            <button id="save-btn" onclick="savePredictions()">
-                💾 GUARDAR MIS PRONÓSTICOS
-            </button>
-        </div>
-    </div>
-    <script src="app.js"></script>
+<div class="login-page-wrapper">
+
+<div class="login-card">
+
+<h2>ACCESO JUGADOR</h2>
+
+<div class="input-group">
+<label>Usuario</label>
+<input type="text" id="login-name" placeholder="Ej: Juan Perez">
+</div>
+
+<div class="input-group">
+<label>PIN</label>
+<input type="password" id="login-pin" maxlength="4" placeholder="****">
+</div>
+
+<button class="btn-login" onclick="handleLogin()">
+⚽ ENTRAR A LA QUINIELA
+</button>
+
+</div>
+
+
+<div class="sidebar-preview">
+
+<h3>PRÓXIMOS PARTIDOS</h3>
+<div id="preview-list"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- APP PRINCIPAL -->
+
+<div id="main-section" style="display:none;">
+
+<div class="container">
+
+<div class="user-bar">
+
+<div id="user-display">
+JUGADOR: ---
+</div>
+
+<button class="btn-exit" onclick="logout()">
+SALIR
+</button>
+
+</div>
+
+
+<!-- TABS -->
+
+<div class="tabs-container">
+
+<button class="tab-btn active" onclick="showTab('Grupos')">
+GRUPOS
+</button>
+
+<button class="tab-btn" onclick="showTab('WallChart')">
+📅 WALL CHART
+</button>
+
+<button class="tab-btn" onclick="showTab('Octavos')">
+OCTAVOS
+</button>
+
+<button class="tab-btn" onclick="showTab('Cuartos')">
+CUARTOS
+</button>
+
+<button class="tab-btn" onclick="showTab('Semis')">
+SEMIS
+</button>
+
+<button class="tab-btn" onclick="showTab('Final')">
+FINAL
+</button>
+
+<button class="tab-btn tab-ranking" onclick="showTab('Ranking')">
+🏆 RANKING
+</button>
+
+</div>
+
+
+<!-- PARTIDOS -->
+
+<div id="match-list"></div>
+
+
+
+<!-- WALL CHART -->
+
+<div id="wall-chart-section" style="display:none;">
+
+<div class="wall-header">
+
+<h2 class="fifa-title">FIFA WORLD CUP</h2>
+
+<h1 class="united-title">
+UNITED 2026
+</h1>
+
+<p class="instruction-text">
+ENTER YOUR PREDICTIONS BELOW
+</p>
+
+</div>
+
+<div class="groups-wall-grid" id="groups-wall-container"></div>
+
+<div class="bracket-separator">
+
+<span>KNOCKOUT STAGE</span>
+
+</div>
+
+<div id="wall-bracket-flow" class="wall-bracket-content"></div>
+
+</div>
+
+
+
+<!-- RANKING -->
+
+<div id="ranking-list" style="display:none;">
+
+<table class="ranking-table">
+
+<thead>
+
+<tr>
+
+<th>POS</th>
+<th>JUGADOR</th>
+<th>PTS</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ranking-body"></tbody>
+
+</table>
+
+</div>
+
+
+
+<!-- GUARDAR PRONOSTICOS -->
+
+<button id="save-btn" onclick="savePredictions()">
+
+💾 GUARDAR MIS PRONÓSTICOS
+
+</button>
+
+</div>
+
+</div>
+
+
+
+<!-- SUPABASE CONFIG -->
+
+<script>
+
+const SUPABASE_URL = "TU_URL_SUPABASE"
+const SUPABASE_KEY = "TU_ANON_PUBLIC_KEY"
+
+const supabase = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+)
+
+</script>
+
+
+<!-- APP JS -->
+
+<script src="app.js"></script>
+
 </body>
+
 </html>
