@@ -6,9 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Quiniela Mundial 2026 ⚽</title>
-
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/53/53283.png">
+<title>Quiniela Mundial 2026</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
@@ -18,17 +16,17 @@
 
 </head>
 
+
 <body>
 
 <header>
 
-<h1>⚽ MUNDIAL 2026</h1>
-<p class="subtitle">QUINIELA OFICIAL</p>
+<h1>MUNDIAL 2026</h1>
+
+<p class="subtitle">SISTEMA DE PRONÓSTICOS</p>
 
 </header>
 
-
-<!-- LOGIN -->
 
 <div id="login-section">
 
@@ -36,133 +34,95 @@
 
 <div class="login-card">
 
-<h2>ACCESO JUGADOR</h2>
+<h2>ACCESO</h2>
 
 <div class="input-group">
-<label>Usuario</label>
-<input type="text" id="login-name" placeholder="Ej: Juan Perez">
+
+<label>Nombre</label>
+
+<input id="login-name">
+
 </div>
 
 <div class="input-group">
+
 <label>PIN</label>
-<input type="password" id="login-pin" maxlength="4" placeholder="****">
+
+<input id="login-pin" type="password">
+
 </div>
 
 <button class="btn-login" onclick="handleLogin()">
-⚽ ENTRAR A LA QUINIELA
+
+ENTRAR
+
 </button>
 
 </div>
 
-
-<div class="sidebar-preview">
-
-<h3>PRÓXIMOS PARTIDOS</h3>
-<div id="preview-list"></div>
-
-</div>
-
 </div>
 
 </div>
 
 
-
-<!-- APP PRINCIPAL -->
-
-<div id="main-section" style="display:none;">
+<div id="main-section" style="display:none">
 
 <div class="container">
 
 <div class="user-bar">
 
-<div id="user-display">
-JUGADOR: ---
-</div>
+<div id="user-display"></div>
 
-<button class="btn-exit" onclick="logout()">
+<button class="btn-exit" onclick="location.reload()">
+
 SALIR
+
 </button>
 
 </div>
 
-
-<!-- TABS -->
 
 <div class="tabs-container">
 
 <button class="tab-btn active" onclick="showTab('Grupos')">
-GRUPOS
+
+🏆 GRUPOS
+
 </button>
 
-<button class="tab-btn" onclick="showTab('WallChart')">
-📅 WALL CHART
-</button>
+<button class="tab-btn" onclick="showTab('Ranking')">
 
-<button class="tab-btn" onclick="showTab('Octavos')">
-OCTAVOS
-</button>
-
-<button class="tab-btn" onclick="showTab('Cuartos')">
-CUARTOS
-</button>
-
-<button class="tab-btn" onclick="showTab('Semis')">
-SEMIS
-</button>
-
-<button class="tab-btn" onclick="showTab('Final')">
-FINAL
-</button>
-
-<button class="tab-btn tab-ranking" onclick="showTab('Ranking')">
 🏆 RANKING
+
 </button>
 
 </div>
 
 
-<!-- PARTIDOS -->
-
-<div id="match-list"></div>
-
-
-
-<!-- WALL CHART -->
-
-<div id="wall-chart-section" style="display:none;">
+<div id="wall-chart-section">
 
 <div class="wall-header">
 
 <h2 class="fifa-title">FIFA WORLD CUP</h2>
 
-<h1 class="united-title">
-UNITED 2026
-</h1>
+<h1 class="united-title">UNITED 2026</h1>
 
 <p class="instruction-text">
+
 ENTER YOUR PREDICTIONS BELOW
+
 </p>
 
 </div>
 
-<div class="groups-wall-grid" id="groups-wall-container"></div>
-
-<div class="bracket-separator">
-
-<span>KNOCKOUT STAGE</span>
+<div class="groups-wall-grid" id="groups-wall-container">
 
 </div>
-
-<div id="wall-bracket-flow" class="wall-bracket-content"></div>
 
 </div>
 
 
-
-<!-- RANKING -->
-
-<div id="ranking-list" style="display:none;">
+<div id="ranking-list" style="display:none">
 
 <table class="ranking-table">
 
@@ -185,37 +145,15 @@ ENTER YOUR PREDICTIONS BELOW
 </div>
 
 
-
-<!-- GUARDAR PRONOSTICOS -->
-
 <button id="save-btn" onclick="savePredictions()">
 
-💾 GUARDAR MIS PRONÓSTICOS
+💾 GUARDAR PRONÓSTICOS
 
 </button>
 
 </div>
 
 </div>
-
-
-
-<!-- SUPABASE CONFIG -->
-
-<script>
-
-const SUPABASE_URL = "TU_URL_SUPABASE"
-const SUPABASE_KEY = "TU_ANON_PUBLIC_KEY"
-
-const supabase = window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
-)
-
-</script>
-
-
-<!-- APP JS -->
 
 <script src="app.js"></script>
 
