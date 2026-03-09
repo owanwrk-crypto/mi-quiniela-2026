@@ -7,8 +7,6 @@ let currentTab="Grupos";
 window.currentUser=null;
 let quinielaGuardada=false;
 
-
-
 function getFlag(team){
 
 const flags={
@@ -86,17 +84,12 @@ return flags[team] || "un"
 
 }
 
-
-
 function flagURL(team){
 
 const code=getFlag(team)
-
 return `https://flagcdn.com/w40/${code}.png`
 
 }
-
-
 
 async function handleLogin(){
 
@@ -130,8 +123,6 @@ showTab("Grupos")
 
 }
 
-
-
 async function checkQuinielaGuardada(){
 
 const {data}=await _sb
@@ -147,8 +138,6 @@ quinielaGuardada=true
 }
 
 }
-
-
 
 function showTab(tab){
 
@@ -181,8 +170,6 @@ renderWallChart()
 
 }
 
-
-
 async function renderWallChart(){
 
 const container=document.getElementById("groups-wall-container")
@@ -202,7 +189,6 @@ let grupos={}
 matches.forEach(m=>{
 
 if(!grupos[m.grupo]) grupos[m.grupo]=[]
-
 grupos[m.grupo].push(m)
 
 })
@@ -221,6 +207,7 @@ let resultClass=""
 
 if(m.goles_a!=null && m.goles_b!=null && b){
 
+// EXACTO
 if(b.goles_a_user==m.goles_a && b.goles_b_user==m.goles_b){
 
 resultClass="correct"
@@ -229,7 +216,26 @@ resultClass="correct"
 
 else{
 
+let real=""
+let user=""
+
+if(m.goles_a>m.goles_b) real="A"
+else if(m.goles_b>m.goles_a) real="B"
+else real="E"
+
+if(b.goles_a_user>b.goles_b_user) user="A"
+else if(b.goles_b_user>b.goles_a_user) user="B"
+else user="E"
+
+if(real===user){
+
+resultClass="close"
+
+}else{
+
 resultClass="wrong"
+
+}
 
 }
 
@@ -240,11 +246,8 @@ rows+=`
 <div class="wall-match ${resultClass}">
 
 <div class="team-left">
-
 <img class="flag" src="${flagURL(m.equipo_a)}">
-
 ${m.equipo_a}
-
 </div>
 
 <div class="score-inputs">
@@ -294,145 +297,5 @@ ${rows}
 `
 
 })
-
-}
-
-
-
-async function savePredictions(){
-
-if(quinielaGuardada){
-
-alert("Tu quiniela ya fue guardada y no puede modificarse.")
-return
-
-}
-
-const confirmar=confirm("¿Estás seguro de guardar tu quiniela?\n\nUna vez guardada NO podrás modificar tus pronósticos.")
-
-if(!confirmar){
-
-return
-
-}
-
-const inputs=document.querySelectorAll(".wall-input")
-
-let predictions=[]
-let ids=new Set()
-
-inputs.forEach(i=>{
-
-const id=i.dataset.id
-
-if(!ids.has(id)){
-
-const a=document.querySelector(`.wall-input[data-id="${id}"][data-side="a"]`).value
-const b=document.querySelector(`.wall-input[data-id="${id}"][data-side="b"]`).value
-
-if(a!=="" && b!==""){
-
-predictions.push({
-
-perfil_id:window.currentUser.id,
-partido_id:id,
-goles_a_user:parseInt(a),
-goles_b_user:parseInt(b)
-
-})
-
-}
-
-ids.add(id)
-
-}
-
-})
-
-if(predictions.length===0){
-
-alert("Debes ingresar al menos un pronóstico")
-
-return
-
-}
-
-const {error}=await _sb
-.from("pronosticos")
-.upsert(predictions,{onConflict:"perfil_id,partido_id"})
-
-if(error){
-
-alert("Error guardando pronósticos")
-
-}
-
-else{
-
-alert("Tu quiniela fue guardada correctamente")
-
-quinielaGuardada=true
-
-showTab("Grupos")
-
-}
-
-}
-
-
-
-async function loadRanking(){
-
-const body=document.getElementById("ranking-body")
-
-body.innerHTML="Cargando..."
-
-const {data,error}=await _sb
-.from("perfiles")
-.select("nombre,puntos,porcentaje_acierto")
-.order("puntos",{ascending:false})
-
-if(error){
-
-console.log(error)
-body.innerHTML="<tr><td colspan='5'>Error cargando ranking</td></tr>"
-return
-
-}
-
-if(!data || data.length===0){
-
-body.innerHTML="<tr><td colspan='5'>No hay datos en el ranking</td></tr>"
-return
-
-}
-
-body.innerHTML=data.map((p,i)=>{
-
-let medal=""
-
-if(i===0) medal="🥇"
-else if(i===1) medal="🥈"
-else if(i===2) medal="🥉"
-
-return `
-
-<tr>
-
-<td>${i+1}</td>
-
-<td>${medal}</td>
-
-<td>${p.nombre}</td>
-
-<td>${p.puntos ?? 0}</td>
-
-<td>${p.porcentaje_acierto ?? 0}%</td>
-
-</tr>
-
-`
-
-}).join("")
 
 }

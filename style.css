@@ -370,3 +370,17 @@ border-left:4px solid #39ff14;
 background:#3f1a1a;
 border-left:4px solid #ff4444;
 }
+.correct{
+background:#1f4428;
+border-left:4px solid #2ecc71;
+}
+
+.close{
+background:#4a3f1a;
+border-left:4px solid #ffd60a;
+}
+
+.wrong{
+background:#4a1f1f;
+border-left:4px solid #ff4d4d;
+}
