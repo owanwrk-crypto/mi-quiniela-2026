@@ -1,11 +1,12 @@
-const URL_SB = 'https://hamqbcccmefflpkurouu.supabase.co';
-const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z';
+const URL_SB = 'https://hamqbcccmefflpkurouu.supabase.co'
+const KEY_SB = 'sb_publishable_t3-L72VE7ViAc4D_0-noqg_Uhdgnn6Z'
 
-const _sb = supabase.createClient(URL_SB, KEY_SB);
+const _sb = supabase.createClient(URL_SB, KEY_SB)
 
-let currentTab="Grupos";
-window.currentUser=null;
-let quinielaGuardada=false;
+let currentTab="Grupos"
+window.currentUser=null
+let quinielaGuardada=false
+
 
 function getFlag(team){
 
@@ -38,17 +39,6 @@ const flags={
 "Austria":"at",
 "Bélgica":"be",
 "Países Bajos":"nl",
-"Noruega":"no",
-"Dinamarca":"dk",
-"Suecia":"se",
-"Polonia":"pl",
-"Ucrania":"ua",
-"Albania":"al",
-"República Checa":"cz",
-"Eslovaquia":"sk",
-"Rumania":"ro",
-"Turquía":"tr",
-"Kosovo":"xk",
 
 "Marruecos":"ma",
 "Egipto":"eg",
@@ -66,13 +56,9 @@ const flags={
 "RI de Irán":"ir",
 "Arabia Saudí":"sa",
 "Catar":"qa",
-"Uzbekistán":"uz",
-"Jordania":"jo",
-"Irak":"iq",
 
 "Australia":"au",
 "Nueva Zelanda":"nz",
-"Nueva Caledonia":"nc",
 
 "Haití":"ht",
 "Curazao":"cw",
@@ -91,19 +77,20 @@ return `https://flagcdn.com/w40/${code}.png`
 
 }
 
+
 async function handleLogin(){
 
 const name=document.getElementById("login-name").value
 const pin=document.getElementById("login-pin").value
 
-const {data:user}=await _sb
+const {data:user,error}=await _sb
 .from("perfiles")
 .select("*")
 .eq("nombre",name)
 .eq("pin",pin)
 .single()
 
-if(!user){
+if(error || !user){
 
 alert("Usuario o PIN incorrecto")
 return
@@ -117,15 +104,17 @@ document.getElementById("main-section").style.display="block"
 
 document.getElementById("user-display").innerText=`JUGADOR: ${user.nombre}`
 
-checkQuinielaGuardada()
+await checkQuinielaGuardada()
 
 showTab("Grupos")
 
 }
 
+
+
 async function checkQuinielaGuardada(){
 
-const {data}=await _sb
+const {data,error}=await _sb
 .from("pronosticos")
 .select("*")
 .eq("perfil_id",window.currentUser.id)
@@ -138,6 +127,8 @@ quinielaGuardada=true
 }
 
 }
+
+
 
 function showTab(tab){
 
@@ -170,19 +161,29 @@ renderWallChart()
 
 }
 
+
+
 async function renderWallChart(){
 
 const container=document.getElementById("groups-wall-container")
 
-const {data:matches}=await _sb
+const {data:matches,error:e1}=await _sb
 .from("partidos")
 .select("*")
 .order("grupo")
 
-const {data:bets}=await _sb
+const {data:bets,error:e2}=await _sb
 .from("pronosticos")
 .select("*")
 .eq("perfil_id",window.currentUser.id)
+
+if(e1 || e2){
+
+console.log(e1,e2)
+container.innerHTML="Error cargando partidos"
+return
+
+}
 
 let grupos={}
 
@@ -207,14 +208,11 @@ let resultClass=""
 
 if(m.goles_a!=null && m.goles_b!=null && b){
 
-// EXACTO
 if(b.goles_a_user==m.goles_a && b.goles_b_user==m.goles_b){
 
 resultClass="correct"
 
-}
-
-else{
+}else{
 
 let real=""
 let user=""
@@ -299,6 +297,61 @@ ${rows}
 })
 
 }
+
+
+
+async function savePredictions(){
+
+if(quinielaGuardada){
+
+alert("La quiniela ya fue guardada")
+return
+
+}
+
+const inputs=document.querySelectorAll(".wall-input")
+
+let bets={}
+
+inputs.forEach(i=>{
+
+const id=i.dataset.id
+const side=i.dataset.side
+
+if(!bets[id]) bets[id]={}
+
+bets[id][side]=i.value
+
+})
+
+for(const matchId in bets){
+
+const a=bets[matchId].a
+const b=bets[matchId].b
+
+if(a==="" || b==="") continue
+
+await _sb.from("pronosticos").insert({
+
+perfil_id:window.currentUser.id,
+partido_id:matchId,
+goles_a_user:a,
+goles_b_user:b
+
+})
+
+}
+
+quinielaGuardada=true
+
+alert("Quiniela guardada")
+
+showTab("Grupos")
+
+}
+
+
+
 async function loadRanking(){
 
 const tbody = document.getElementById("ranking-body")
@@ -306,9 +359,17 @@ const podium = document.getElementById("top3-podium")
 
 tbody.innerHTML = "<tr><td colspan='5'>Cargando ranking...</td></tr>"
 
-const {data:perfiles} = await _sb.from("perfiles").select("*")
-const {data:matches} = await _sb.from("partidos").select("*")
-const {data:pronosticos} = await _sb.from("pronosticos").select("*")
+const {data:perfiles,error:e1} = await _sb.from("perfiles").select("*")
+const {data:matches,error:e2} = await _sb.from("partidos").select("*")
+const {data:pronosticos,error:e3} = await _sb.from("pronosticos").select("*")
+
+if(e1 || e2 || e3){
+
+console.log(e1,e2,e3)
+tbody.innerHTML="<tr><td colspan='5'>Error cargando ranking</td></tr>"
+return
+
+}
 
 let ranking = []
 
@@ -371,7 +432,6 @@ porcentaje:porcentaje
 ranking.sort((a,b)=> b.puntos - a.puntos)
 
 
-// TOP 3 PODIUM
 
 podium.innerHTML=""
 
@@ -392,7 +452,6 @@ podium.innerHTML+=`
 })
 
 
-// TABLA
 
 tbody.innerHTML=""
 
@@ -400,9 +459,9 @@ ranking.forEach((r,i)=>{
 
 let medal=["🥇","🥈","🥉"][i] || ""
 
-let highlight = ""
+let highlight=""
 
-if(window.currentUser && r.nombre === window.currentUser.nombre){
+if(window.currentUser && r.nombre===window.currentUser.nombre){
 highlight="highlight-player"
 }
 
