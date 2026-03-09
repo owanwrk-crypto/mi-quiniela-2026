@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 
 <meta charset="UTF-8">
@@ -8,7 +7,7 @@
 
 <title>Quiniela Mundial 2026</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="style.css">
 
@@ -16,17 +15,17 @@
 
 </head>
 
-
 <body>
 
 <header>
 
 <h1>MUNDIAL 2026</h1>
-
-<p class="subtitle">SISTEMA DE PRONÓSTICOS</p>
+<p class="subtitle">Sistema de Pronósticos</p>
 
 </header>
 
+
+<!-- LOGIN -->
 
 <div id="login-section">
 
@@ -37,25 +36,17 @@
 <h2>ACCESO</h2>
 
 <div class="input-group">
-
-<label>Nombre</label>
-
-<input id="login-name">
-
+<label>Usuario</label>
+<input id="login-name" type="text">
 </div>
 
 <div class="input-group">
-
 <label>PIN</label>
-
 <input id="login-pin" type="password">
-
 </div>
 
 <button class="btn-login" onclick="handleLogin()">
-
 ENTRAR
-
 </button>
 
 </div>
@@ -64,6 +55,9 @@ ENTRAR
 
 </div>
 
+
+
+<!-- SISTEMA -->
 
 <div id="main-section" style="display:none">
 
@@ -74,9 +68,7 @@ ENTRAR
 <div id="user-display"></div>
 
 <button class="btn-exit" onclick="location.reload()">
-
 SALIR
-
 </button>
 
 </div>
@@ -85,42 +77,43 @@ SALIR
 <div class="tabs-container">
 
 <button class="tab-btn active" onclick="showTab('Grupos')">
-
 🏆 GRUPOS
-
 </button>
 
 <button class="tab-btn" onclick="showTab('Ranking')">
-
-🏆 RANKING
-
+🥇 RANKING
 </button>
 
 </div>
 
+
+
+<!-- GRUPOS -->
 
 <div id="wall-chart-section">
 
 <div class="wall-header">
 
-<h2 class="fifa-title">FIFA WORLD CUP</h2>
-
-<h1 class="united-title">UNITED 2026</h1>
-
-<p class="instruction-text">
-
-ENTER YOUR PREDICTIONS BELOW
-
-</p>
-
+<div class="fifa-title">
+FIFA WORLD CUP
 </div>
 
-<div class="groups-wall-grid" id="groups-wall-container">
-
+<div class="united-title">
+UNITED 2026
 </div>
 
 </div>
 
+
+<!-- ESTE ERA EL CONTENEDOR QUE FALTABA -->
+
+<div id="groups-wall-container" class="groups-wall-grid"></div>
+
+</div>
+
+
+
+<!-- RANKING -->
 
 <div id="ranking-list" style="display:none">
 
@@ -129,11 +122,9 @@ ENTER YOUR PREDICTIONS BELOW
 <thead>
 
 <tr>
-
 <th>POS</th>
 <th>JUGADOR</th>
-<th>PTS</th>
-
+<th>PUNTOS</th>
 </tr>
 
 </thead>
@@ -145,18 +136,18 @@ ENTER YOUR PREDICTIONS BELOW
 </div>
 
 
+
 <button id="save-btn" onclick="savePredictions()">
-
 💾 GUARDAR PRONÓSTICOS
-
 </button>
 
+
 </div>
 
 </div>
+
 
 <script src="app.js"></script>
 
 </body>
-
 </html>
