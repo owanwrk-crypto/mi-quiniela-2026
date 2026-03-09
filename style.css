@@ -384,3 +384,37 @@ border-left:4px solid #ffd60a;
 background:#4a1f1f;
 border-left:4px solid #ff4d4d;
 }
+.podium{
+display:flex;
+justify-content:center;
+gap:20px;
+margin-bottom:20px;
+}
+
+.podium-player{
+background:#111;
+padding:12px;
+border-radius:10px;
+text-align:center;
+width:120px;
+box-shadow:0 0 10px rgba(0,0,0,0.4);
+}
+
+.podium-medal{
+font-size:28px;
+}
+
+.podium-name{
+font-weight:600;
+margin-top:5px;
+}
+
+.podium-points{
+font-size:14px;
+opacity:0.8;
+}
+
+.highlight-player{
+background:#ffe06633;
+font-weight:700;
+}

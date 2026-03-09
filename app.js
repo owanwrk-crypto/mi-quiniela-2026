@@ -302,28 +302,21 @@ ${rows}
 async function loadRanking(){
 
 const tbody = document.getElementById("ranking-body")
+const podium = document.getElementById("top3-podium")
 
 tbody.innerHTML = "<tr><td colspan='5'>Cargando ranking...</td></tr>"
 
-const {data:perfiles} = await _sb
-.from("perfiles")
-.select("*")
-
-const {data:matches} = await _sb
-.from("partidos")
-.select("*")
-
-const {data:pronosticos} = await _sb
-.from("pronosticos")
-.select("*")
+const {data:perfiles} = await _sb.from("perfiles").select("*")
+const {data:matches} = await _sb.from("partidos").select("*")
+const {data:pronosticos} = await _sb.from("pronosticos").select("*")
 
 let ranking = []
 
 perfiles.forEach(p=>{
 
-let puntos = 0
-let total = 0
-let aciertos = 0
+let puntos=0
+let total=0
+let aciertos=0
 
 const bets = pronosticos.filter(x=>x.perfil_id === p.id)
 
@@ -338,7 +331,7 @@ total++
 
 if(b.goles_a_user == m.goles_a && b.goles_b_user == m.goles_b){
 
-puntos += 3
+puntos+=3
 aciertos++
 
 }else{
@@ -356,7 +349,7 @@ else user="E"
 
 if(real === user){
 
-puntos += 1
+puntos+=1
 aciertos++
 
 }
@@ -377,19 +370,45 @@ porcentaje:porcentaje
 
 ranking.sort((a,b)=> b.puntos - a.puntos)
 
+
+// TOP 3 PODIUM
+
+podium.innerHTML=""
+
+ranking.slice(0,3).forEach((p,i)=>{
+
+let medal=["🥇","🥈","🥉"][i]
+
+podium.innerHTML+=`
+
+<div class="podium-player pos${i+1}">
+<div class="podium-medal">${medal}</div>
+<div class="podium-name">${p.nombre}</div>
+<div class="podium-points">${p.puntos} pts</div>
+</div>
+
+`
+
+})
+
+
+// TABLA
+
 tbody.innerHTML=""
 
 ranking.forEach((r,i)=>{
 
-let medal=""
+let medal=["🥇","🥈","🥉"][i] || ""
 
-if(i==0) medal="🥇"
-if(i==1) medal="🥈"
-if(i==2) medal="🥉"
+let highlight = ""
+
+if(window.currentUser && r.nombre === window.currentUser.nombre){
+highlight="highlight-player"
+}
 
 tbody.innerHTML+=`
 
-<tr>
+<tr class="${highlight}">
 <td>${i+1}</td>
 <td>${medal}</td>
 <td>${r.nombre}</td>
