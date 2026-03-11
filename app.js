@@ -364,7 +364,8 @@ async function adminUpdateMatch(id, grupo) {
 async function adminResetPredictions() {
     if (!confirm("⚠️ ADVERTENCIA: Se borrarán TODOS los pronósticos de TODOS los jugadores. ¿Continuar?")) return;
     
-    const { error } = await _sb.from("pronosticos").delete().neq("id", "00000000-0000-0000-0000-000000000000"); // Borrar todo
+    // El ID de pronósticos es bigint, no UUID. Usamos un filtro que atrape a todos los IDs (mayores a 0)
+    const { error } = await _sb.from("pronosticos").delete().gt("id", 0); 
 
     if (error) alert("Error: " + error.message);
     else alert("Sistema reseteado correctamente");
