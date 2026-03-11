@@ -524,7 +524,7 @@ if (faseGuardada) {
 
 }
 
-}
+
 
 function getResultClass(m, b) {
     if (m.goles_a == null || m.goles_b == null || !b) return "";
