@@ -208,7 +208,24 @@ puntos:puntos,
 porcentaje: total ? Math.round((aciertos/total)*100) : 0
 })
 
+}) // Fin jugadores.forEach
+
+ranking.sort((a,b)=> b.puntos - a.puntos)
+
+const myData = ranking.find(r => r.id === window.currentUser.id)
+const myRank = ranking.findIndex(r => r.id === window.currentUser.id) + 1
+
+if(myData){
+
+document.getElementById("stat-points").innerText = myData.puntos
+document.getElementById("stat-rank").innerText = `#${myRank}`
+document.getElementById("stat-accuracy").innerText = `${myData.porcentaje}%`
+
 }
+
+} // Fin updateGlobalStats
+
+
 
 // --- FUNCIONES DE ADMINISTRADOR ---
 
@@ -216,7 +233,7 @@ async function adminLoadUsers() {
     const container = document.getElementById("admin-users-list");
     const { data: users, error } = await _sb.from("perfiles").select("*").order("nombre");
     
-    if (error) return;
+    if (error || !users) return;
 
     container.innerHTML = users.map(u => `
         <div class="admin-item">
@@ -262,7 +279,7 @@ async function adminLoadMatches(fase) {
     const container = document.getElementById("admin-matches-list");
     const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
 
-    if (error) return;
+    if (error || !matches) return;
 
     const filtered = matches.filter(m => {
         if (fase === "Grupos") return m.grupo.length === 1 || m.grupo.toUpperCase().includes("GRUPO");
@@ -314,22 +331,8 @@ async function adminResetPredictions() {
 
     if (error) alert("Error: " + error.message);
     else alert("Sistema reseteado correctamente");
-})
-
-ranking.sort((a,b)=> b.puntos - a.puntos)
-
-const myData = ranking.find(r => r.id === window.currentUser.id)
-const myRank = ranking.findIndex(r => r.id === window.currentUser.id) + 1
-
-if(myData){
-
-document.getElementById("stat-points").innerText = myData.puntos
-document.getElementById("stat-rank").innerText = `#${myRank}`
-document.getElementById("stat-accuracy").innerText = `${myData.porcentaje}%`
-
 }
 
-}
 
 
 
@@ -420,8 +423,8 @@ async function loadUserList() {
     const select = document.getElementById("user-search");
     const { data: users, error } = await _sb.from("perfiles").select("id, nombre").order("nombre");
     
-    if (error) return;
-    
+    if (error || !users) return;
+
     // Guardar la opción actual para no perderla al refrescar la lista
     const currentVal = select.value;
     select.innerHTML = '<option value="">Selecciona un jugador...</option>';
@@ -559,7 +562,13 @@ try {
             return g.length === 1 || g.includes("GRUPO"); 
         }
         
-        return g === filterPhase.toUpperCase() || g.includes(filterPhase.toUpperCase());
+        const phase = filterPhase.toUpperCase();
+        // Permitir que "SEMIFINAL" coincida con "SEMI" y viceversa
+        if (phase === "SEMIFINAL" || phase === "SEMI") {
+            return g === "SEMIFINAL" || g === "SEMI";
+        }
+        
+        return g === phase || g.includes(phase);
     });
 
     if (isGroups && filteredMatches.length === 0) {
