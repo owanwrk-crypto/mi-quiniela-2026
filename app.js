@@ -281,7 +281,16 @@ async function adminAddUser() {
         return;
     }
 
-    const { error } = await _sb.from("perfiles").insert({ nombre: name, pin: pin });
+    // Generar un ID aleatorio (UUID) por si la base de datos no lo hace automáticamente
+    const newId = crypto.randomUUID();
+
+    const { error } = await _sb.from("perfiles").insert({ 
+        id: newId,
+        nombre: name, 
+        pin: pin,
+        rol: 'jugador',
+        es_admin: false
+    });
 
     if (error) {
         alert("Error al registrar: " + error.message);
