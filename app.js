@@ -287,9 +287,7 @@ async function adminAddUser() {
     const { error } = await _sb.from("perfiles").insert({ 
         id: newId,
         nombre: name, 
-        pin: pin,
-        rol: 'jugador',
-        es_admin: false
+        pin: pin
     });
 
     if (error) {
