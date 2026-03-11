@@ -971,96 +971,174 @@ input[type=number] {
   font-size: 13px;
 }
 
-.admin-item-match {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  background: rgba(255,255,255,0.03);
-  border-radius: 15px;
-  border: 1px solid var(--border);
-  margin-bottom: 12px;
+/* EPIC ADMIN MATCH CARDS */
+.admin-group-section {
+  margin-bottom: 40px;
 }
 
-.match-info-small {
-  flex: 1;
+.admin-group-title {
   font-family: var(--font-header);
+  color: var(--accent);
   font-size: 14px;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  padding-left: 10px;
+  border-left: 3px solid var(--accent);
+}
+
+.admin-matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.admin-item-match-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.admin-item-match-card:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--accent-glow);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.admin-match-teams {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-header);
   letter-spacing: 1px;
 }
 
-.admin-inputs {
+.admin-team {
   display: flex;
-  gap: 10px;
   align-items: center;
-  background: rgba(0,0,0,0.3);
-  padding: 10px 15px;
+  gap: 12px;
+  flex: 1;
+}
+
+.admin-team:last-child {
+  justify-content: flex-end;
+}
+
+.flag-min {
+  width: 28px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.admin-vs {
+  font-size: 12px;
+  opacity: 0.3;
+  padding: 0 15px;
+}
+
+.admin-match-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0,0,0,0.2);
+  padding: 12px;
   border-radius: 12px;
 }
 
-.admin-inputs input {
-  width: 50px;
+.admin-score-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-score-inputs input {
+  width: 45px;
   height: 40px;
   background: #000;
   border: 1px solid var(--border);
   color: #fff;
   text-align: center;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 20px;
   border-radius: 8px;
+  font-family: var(--font-main);
 }
 
-.admin-inputs input:focus {
+.admin-score-inputs input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
   outline: none;
 }
 
-.admin-inputs span {
+.admin-score-inputs .sep {
   opacity: 0.3;
 }
 
-.admin-penalties {
+.admin-penalty-inputs {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-left: 10px;
-  padding-left: 10px;
+  padding: 0 10px;
   border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 
-.admin-penalties input {
-  width: 40px !important;
-  height: 35px !important;
-  font-size: 14px !important;
-  background: rgba(0,242,255,0.05) !important;
-  border-color: var(--accent-glow) !important;
+.p-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--accent);
+  margin-right: 5px;
 }
 
-.admin-user-info {
-  display: flex;
-  flex-direction: column;
+.admin-penalty-inputs input {
+  width: 32px;
+  height: 32px;
+  background: rgba(0,242,255,0.05);
+  border: 1px solid var(--accent-glow);
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 6px;
 }
 
-.admin-user-info span {
-  font-size: 11px;
-  opacity: 0.5;
-  letter-spacing: 1px;
+.p-sep {
+  opacity: 0.3;
+  font-size: 12px;
 }
 
-.btn-save-small {
+.btn-admin-save {
   background: var(--green);
   color: #000;
   border: none;
   padding: 10px 15px;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 10px;
+  font-family: var(--font-header);
   font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.btn-save-small:hover {
-  transform: scale(1.1);
+.btn-admin-save:hover {
+  transform: scale(1.05);
   box-shadow: 0 0 15px var(--green-glow);
+}
+
+@media (max-width: 768px) {
+  .admin-matches-grid { grid-template-columns: 1fr; }
+  .admin-match-controls { flex-direction: column; }
+  .admin-penalty-inputs { border: none; padding: 10px 0; }
 }
 
 .centered {
