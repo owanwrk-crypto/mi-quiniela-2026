@@ -229,6 +229,17 @@ header h1 {
   background: rgba(0,0,0,0.5);
 }
 
+/* HIDE NUMBER INPUT SPINNERS */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .btn-login {
   width: 100%;
   margin-top: 10px;
