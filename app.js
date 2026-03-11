@@ -105,8 +105,90 @@ document.getElementById("main-section").style.display="block"
 document.getElementById("user-display").innerText=`JUGADOR: ${user.nombre}`
 
 await checkQuinielaGuardada()
+await updateGlobalStats()
 
 showTab("Grupos")
+
+}
+
+
+
+async function updateGlobalStats(){
+
+const {data:perfiles} = await _sb.from("perfiles").select("*")
+const {data:matches} = await _sb.from("partidos").select("*")
+const {data:pronosticos} = await _sb.from("pronosticos").select("*")
+
+if(!perfiles || !matches || !pronosticos) return
+
+let ranking = []
+
+perfiles.forEach(p=>{
+
+let puntos=0
+let total=0
+let aciertos=0
+
+const bets = pronosticos.filter(x=>x.perfil_id === p.id)
+
+bets.forEach(b=>{
+
+const m = matches.find(x=>x.id === b.partido_id)
+
+if(!m || m.goles_a == null || m.goles_b == null) return
+
+total++
+
+if(b.goles_a_user == m.goles_a && b.goles_b_user == m.goles_b){
+
+puntos+=3
+aciertos++
+
+}else{
+
+let real=""
+let user=""
+
+if(m.goles_a > m.goles_b) real="A"
+else if(m.goles_b > m.goles_a) real="B"
+else real="E"
+
+if(b.goles_a_user > b.goles_b_user) user="A"
+else if(b.goles_b_user > b.goles_b_user) user="B"
+else user="E"
+
+if(real === user){
+
+puntos+=1
+aciertos++
+
+}
+
+}
+
+})
+
+ranking.push({
+id: p.id,
+nombre:p.nombre,
+puntos:puntos,
+porcentaje: total ? Math.round((aciertos/total)*100) : 0
+})
+
+})
+
+ranking.sort((a,b)=> b.puntos - a.puntos)
+
+const myData = ranking.find(r => r.id === window.currentUser.id)
+const myRank = ranking.findIndex(r => r.id === window.currentUser.id) + 1
+
+if(myData){
+
+document.getElementById("stat-points").innerText = myData.puntos
+document.getElementById("stat-rank").innerText = `#${myRank}`
+document.getElementById("stat-accuracy").innerText = `${myData.porcentaje}%`
+
+}
 
 }
 
@@ -137,11 +219,18 @@ currentTab=tab
 document.getElementById("wall-chart-section").style.display="none"
 document.getElementById("ranking-list").style.display="none"
 document.getElementById("save-btn").style.display="none"
+document.getElementById("rules-section").style.display="none"
 
 if(tab==="Ranking"){
 
 document.getElementById("ranking-list").style.display="block"
 loadRanking()
+
+}
+
+if(tab==="Reglas"){
+
+document.getElementById("rules-section").style.display="block"
 
 }
 

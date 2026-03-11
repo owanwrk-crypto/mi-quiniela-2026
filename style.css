@@ -235,6 +235,31 @@ header h1 {
   letter-spacing: 2px;
   font-size: 14px;
   color: var(--accent);
+  min-width: 150px;
+}
+
+.stats-summary {
+  display: flex;
+  gap: 30px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-family: var(--font-header);
+  letter-spacing: 1px;
+  opacity: 0.5;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
 }
 
 .btn-exit {
@@ -531,6 +556,52 @@ header h1 {
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-glow); }
+
+/* RULES SECTION */
+.rules-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 40px 0;
+}
+
+.rule-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.rule-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+}
+
+.rule-icon {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.rule-card h3 {
+  font-family: var(--font-header);
+  color: var(--accent);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.rule-card p {
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.rule-detail {
+  font-size: 14px;
+  opacity: 0.7;
+}
 
 @media (max-width: 768px) {
   .podium { transform: scale(0.8); gap: 10px; }

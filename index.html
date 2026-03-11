@@ -71,6 +71,21 @@ ENTRAR
 
 <div id="user-display"></div>
 
+<div id="user-stats-summary" class="stats-summary">
+<div class="stat-item">
+<span class="stat-label">PUNTOS</span>
+<span id="stat-points" class="stat-value">--</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">RANK</span>
+<span id="stat-rank" class="stat-value">--</span>
+</div>
+<div class="stat-item">
+<span class="stat-label">ACIERTO</span>
+<span id="stat-accuracy" class="stat-value">--</span>
+</div>
+</div>
+
 <button class="btn-exit" onclick="location.reload()">
 SALIR
 </button>
@@ -90,6 +105,43 @@ SALIR
 <button class="tab-btn" onclick="showTab('Ranking')">
 🥇 RANKING
 </button>
+
+<button class="tab-btn" onclick="showTab('Reglas')">
+📜 REGLAS
+</button>
+
+</div>
+
+
+
+<!-- REGLAS -->
+
+<div id="rules-section" style="display:none">
+
+<div class="rules-container">
+
+<div class="rule-card">
+<div class="rule-icon">🔥</div>
+<h3>3 PUNTOS</h3>
+<p>Resultado exacto</p>
+<span class="rule-detail">Si aciertas el marcador final del partido.</span>
+</div>
+
+<div class="rule-card">
+<div class="rule-icon">⚽</div>
+<h3>1 PUNTO</h3>
+<p>Resultado simple</p>
+<span class="rule-detail">Si aciertas quién gana o si hay empate, pero no el marcador.</span>
+</div>
+
+<div class="rule-card">
+<div class="rule-icon">❌</div>
+<h3>0 PUNTOS</h3>
+<p>Sin acierto</p>
+<span class="rule-detail">Si no aciertas ni el ganador ni el empate.</span>
+</div>
+
+</div>
 
 </div>
 
