@@ -107,12 +107,15 @@ try {
     // Ejecutamos estas funciones, pero si fallan no bloqueamos el inicio
     try {
         await checkQuinielaGuardada()
-        await updateGlobalStats()
     } catch (e) {
-        console.error("Error al cargar datos del usuario:", e)
+        console.error("Error en checkQuinielaGuardada:", e)
     }
 
+    // Llamamos a showTab inmediatamente para no hacer esperar al usuario
     showTab("Grupos")
+
+    // Cargamos estadísticas en segundo plano
+    updateGlobalStats().catch(e => console.error("Error en updateGlobalStats:", e))
 } catch (err) {
     console.error("Error en login:", err)
     alert("Error de conexión al servidor.")
@@ -268,14 +271,13 @@ document.getElementById("rules-section").style.display="block"
 if(phases.includes(tab)){
 
 document.getElementById("wall-chart-section").style.display="block"
-
-if(!quinielaGuardada){
-
 document.getElementById("save-btn").style.display="block"
 
-}
-
-renderWallChart(tab)
+console.log("Cargando fase:", tab)
+renderWallChart(tab).catch(err => {
+    console.error("Error en renderWallChart:", err)
+    document.getElementById("groups-wall-container").innerHTML = `<div class="empty-msg">Error fatal: ${err.message}</div>`
+})
 
 }
 
@@ -387,141 +389,163 @@ async function loadOtherUserPredictions(userId) {
 async function renderWallChart(filterPhase = "Grupos"){
 
 const container=document.getElementById("groups-wall-container")
+if(!container) return;
+
 container.innerHTML = `<p class="empty-msg">Cargando partidos de ${filterPhase}...</p>`;
 
-const {data:matches,error:e1}=await _sb
-.from("partidos")
-.select("*")
-.order("id")
+try {
+    const {data:matches,error:e1}=await _sb
+    .from("partidos")
+    .select("*")
+    .order("id")
 
-const {data:bets,error:e2}=await _sb
-.from("pronosticos")
-.select("*")
-.eq("perfil_id",window.currentUser.id)
+    const {data:bets,error:e2}=await _sb
+    .from("pronosticos")
+    .select("*")
+    .eq("perfil_id",window.currentUser.id)
 
-if(e1 || e2){
-console.log(e1,e2)
-container.innerHTML="Error cargando partidos"
-return
-}
+    if(e1 || e2){
+        console.error("Error Supabase:", e1, e2)
+        container.innerHTML=`<div class="empty-msg">Error de conexión con la base de datos: ${e1?.message || e2?.message || "Error desconocido"}</div>`
+        return
+    }
 
-// Determinar si es fase de grupos o eliminación directa
-const isGroups = filterPhase === "Grupos";
+    console.log(`Partidos totales: ${matches?.length}, Pronósticos: ${bets?.length}`)
 
-let filteredMatches = matches.filter(m => {
-    if (isGroups) return m.grupo.length === 1; // Solo grupos A-H
-    return m.grupo.toLowerCase() === filterPhase.toLowerCase();
-});
+    if (!matches || matches.length === 0) {
+        container.innerHTML = `<p class="empty-msg">No se encontraron partidos en la base de datos.</p>`;
+        return;
+    }
 
-// Comprobar si ya se guardó esta fase (al menos un partido con pronóstico)
-const faseGuardada = filteredMatches.some(m => 
-    pronosticosUsuario.some(p => p.partido_id === m.id)
-);
+    // Determinar si es fase de grupos o eliminación directa
+    const isGroups = filterPhase === "Grupos";
 
-container.innerHTML=""
+    let filteredMatches = matches.filter(m => {
+        if (!m.grupo) return false;
+        const g = m.grupo.trim().toUpperCase();
+        
+        if (isGroups) {
+            return g.length === 1 || g.includes("GRUPO"); 
+        }
+        
+        return g === filterPhase.toUpperCase() || g.includes(filterPhase.toUpperCase());
+    });
 
-if (filteredMatches.length === 0) {
-    container.innerHTML = `<p class="empty-msg">No hay partidos programados para la fase: ${filterPhase.toUpperCase()}</p>`;
-    return;
-}
+    if (isGroups && filteredMatches.length === 0) {
+        filteredMatches = matches.filter(m => m.grupo);
+    }
 
-// Vista de Grupos (Grid)
-if (isGroups) {
-    let grupos={}
-    filteredMatches.forEach(m=>{
-        if(!grupos[m.grupo]) grupos[m.grupo]=[]
-        grupos[m.grupo].push(m)
-    })
+    const faseGuardada = filteredMatches.length > 0 && filteredMatches.every(m => 
+        pronosticosUsuario.some(p => p.partido_id === m.id)
+    );
 
-    Object.keys(grupos).forEach((g, index)=>{
-        let rows=""
-        grupos[g].forEach(m=>{
-            const b=bets?.find(x=>x.partido_id===m.id)
-            let resultClass = getResultClass(m, b);
+    container.innerHTML=""
 
-            rows+=`
-                <div class="wall-match ${resultClass}">
-                    <div class="team-left">
-                        <img class="flag" src="${flagURL(m.equipo_a)}">
-                        ${m.equipo_a}
+    if (filteredMatches.length === 0) {
+        container.innerHTML = `<p class="empty-msg">No hay partidos programados para la fase: ${filterPhase.toUpperCase()}</p>`;
+        return;
+    }
+
+    // Vista de Grupos (Grid)
+    if (isGroups) {
+        let grupos={}
+        filteredMatches.forEach(m=>{
+            if(!grupos[m.grupo]) grupos[m.grupo]=[]
+            grupos[m.grupo].push(m)
+        })
+
+        Object.keys(grupos).forEach((g, index)=>{
+            let rows=""
+            grupos[g].forEach(m=>{
+                const b=bets?.find(x=>x.partido_id===m.id)
+                let resultClass = getResultClass(m, b);
+
+                rows+=`
+                    <div class="wall-match ${resultClass}">
+                        <div class="team-left">
+                            <img class="flag" src="${flagURL(m.equipo_a)}">
+                            ${m.equipo_a}
+                        </div>
+                        <div class="score-inputs">
+                            <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                            <span>-</span>
+                            <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                        </div>
+                        <div class="team-right">
+                            ${m.equipo_b}
+                            <img class="flag" src="${flagURL(m.equipo_b)}">
+                        </div>
                     </div>
-                    <div class="score-inputs">
-                        <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
-                        <span>-</span>
-                        <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
-                    </div>
-                    <div class="team-right">
-                        ${m.equipo_b}
-                        <img class="flag" src="${flagURL(m.equipo_b)}">
-                    </div>
+                `;
+            })
+
+            container.innerHTML+=`
+                <div class="group-wall" style="animation-delay: ${index * 0.1}s">
+                    <h3>GRUPO ${g}</h3>
+                    ${rows}
                 </div>
             `;
         })
+    } 
+    // Vista de Eliminación Directa (Lista una debajo de otra)
+    else {
+        let rows = "";
+        filteredMatches.forEach((m, index) => {
+            const b = bets?.find(x => x.partido_id === m.id);
+            let resultClass = getResultClass(m, b);
 
-        container.innerHTML+=`
-            <div class="group-wall" style="animation-delay: ${index * 0.1}s">
-                <h3>GRUPO ${g}</h3>
+            rows += `
+                <div class="knockout-match ${resultClass}" style="animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${index * 0.1}s">
+                    <div class="team-left knockout-team">
+                        <img class="flag-large" src="${flagURL(m.equipo_a)}">
+                        <span>${m.equipo_a}</span>
+                    </div>
+                    
+                    <div class="score-inputs knockout-scores">
+                        <div class="score-group">
+                            <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                            <div class="penalty-input-container" title="Penales si hay empate">
+                                <span class="penalty-label">P</span>
+                                <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${faseGuardada ? "disabled":""} value="${b?.penales_a_user ?? ''}">
+                            </div>
+                        </div>
+                        
+                        <span class="vs-text">VS</span>
+                        
+                        <div class="score-group">
+                            <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                            <div class="penalty-input-container" title="Penales si hay empate">
+                                <span class="penalty-label">P</span>
+                                <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${faseGuardada ? "disabled":""} value="${b?.penales_b_user ?? ''}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-right knockout-team">
+                        <span>${m.equipo_b}</span>
+                        <img class="flag-large" src="${flagURL(m.equipo_b)}">
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="knockout-list-container">
+                <h2 class="knockout-title">${filterPhase.toUpperCase()}</h2>
+                <p class="knockout-hint">En caso de empate después de 120', usa los campos de <strong>P</strong> (Penales) para decidir quién avanza.</p>
                 ${rows}
             </div>
         `;
-    })
-} 
-// Vista de Eliminación Directa (Lista una debajo de otra)
-else {
-    let rows = "";
-    filteredMatches.forEach((m, index) => {
-        const b = bets?.find(x => x.partido_id === m.id);
-        let resultClass = getResultClass(m, b);
+    }
 
-        rows += `
-            <div class="knockout-match ${resultClass}" style="animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${index * 0.1}s">
-                <div class="team-left knockout-team">
-                    <img class="flag-large" src="${flagURL(m.equipo_a)}">
-                    <span>${m.equipo_a}</span>
-                </div>
-                
-                <div class="score-inputs knockout-scores">
-                    <div class="score-group">
-                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
-                        <div class="penalty-input-container" title="Penales si hay empate">
-                            <span class="penalty-label">P</span>
-                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${faseGuardada ? "disabled":""} value="${b?.penales_a_user ?? ''}">
-                        </div>
-                    </div>
-                    
-                    <span class="vs-text">VS</span>
-                    
-                    <div class="score-group">
-                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
-                        <div class="penalty-input-container" title="Penales si hay empate">
-                            <span class="penalty-label">P</span>
-                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${faseGuardada ? "disabled":""} value="${b?.penales_b_user ?? ''}">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="team-right knockout-team">
-                    <span>${m.equipo_b}</span>
-                    <img class="flag-large" src="${flagURL(m.equipo_b)}">
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = `
-        <div class="knockout-list-container">
-            <h2 class="knockout-title">${filterPhase.toUpperCase()}</h2>
-            <p class="knockout-hint">En caso de empate después de 120', usa los campos de <strong>P</strong> (Penales) para decidir quién avanza.</p>
-            ${rows}
-        </div>
-    `;
+    // Ocultar botón de guardar si la fase ya está bloqueada
+    if (faseGuardada) {
+        document.getElementById("save-btn").style.display = "none";
+    }
+} catch (error) {
+    console.error("Error fatal en renderWallChart:", error)
+    container.innerHTML = `<div class="empty-msg">Error inesperado: ${error.message}</div>`
 }
-
-// Ocultar botón de guardar si la fase ya está bloqueada
-if (faseGuardada) {
-    document.getElementById("save-btn").style.display = "none";
-}
-
 }
 
 
