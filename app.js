@@ -84,31 +84,39 @@ async function handleLogin(){
 const name=document.getElementById("login-name").value
 const pin=document.getElementById("login-pin").value
 
-const {data:user,error}=await _sb
-.from("perfiles")
-.select("*")
-.eq("nombre",name)
-.eq("pin",pin)
-.single()
+try {
+    const {data:user,error}=await _sb
+    .from("perfiles")
+    .select("*")
+    .eq("nombre",name)
+    .eq("pin",pin)
+    .single()
 
-if(error || !user){
+    if(error || !user){
+        alert("Usuario o PIN incorrecto")
+        return
+    }
 
-alert("Usuario o PIN incorrecto")
-return
+    window.currentUser=user
 
+    document.getElementById("login-section").style.display="none"
+    document.getElementById("main-section").style.display="block"
+
+    document.getElementById("user-display").innerText=`JUGADOR: ${user.nombre}`
+
+    // Ejecutamos estas funciones, pero si fallan no bloqueamos el inicio
+    try {
+        await checkQuinielaGuardada()
+        await updateGlobalStats()
+    } catch (e) {
+        console.error("Error al cargar datos del usuario:", e)
+    }
+
+    showTab("Grupos")
+} catch (err) {
+    console.error("Error en login:", err)
+    alert("Error de conexión al servidor.")
 }
-
-window.currentUser=user
-
-document.getElementById("login-section").style.display="none"
-document.getElementById("main-section").style.display="block"
-
-document.getElementById("user-display").innerText=`JUGADOR: ${user.nombre}`
-
-await checkQuinielaGuardada()
-await updateGlobalStats()
-
-showTab("Grupos")
 
 }
 
@@ -155,13 +163,20 @@ else if(m.goles_b > m.goles_a) real="B"
 else real="E"
 
 if(b.goles_a_user > b.goles_b_user) user="A"
-else if(b.goles_b_user > b.goles_b_user) user="B"
+else if(b.goles_b_user > b.goles_a_user) user="B"
 else user="E"
 
 if(real === user){
 
-puntos+=1
-aciertos++
+  // Bonus de penales en fases de eliminación
+  if (real === "E" && m.grupo.length > 1) {
+    const realPenal = m.penales_a > m.penales_b ? "A" : "B";
+    const userPenal = b.penales_a_user > b.penales_b_user ? "A" : "B";
+    if (realPenal === userPenal) puntos += 1;
+  }
+
+  puntos+=1
+  aciertos++
 
 }
 
@@ -627,8 +642,15 @@ else user="E"
 
 if(real === user){
 
-puntos+=1
-aciertos++
+  // Bonus de penales en fases de eliminación
+  if (real === "E" && m.grupo.length > 1) {
+    const realPenal = m.penales_a > m.penales_b ? "A" : "B";
+    const userPenal = b.penales_a_user > b.penales_b_user ? "A" : "B";
+    if (realPenal === userPenal) puntos += 1;
+  }
+
+  puntos+=1
+  aciertos++
 
 }
 
