@@ -332,17 +332,28 @@ async function loadOtherUserPredictions(userId) {
                 }
             }
 
+            // Renderizado de scores y penales
+            let scoreUI = `
+                <div class="score-display">
+                    <div class="score-group">
+                        <span class="score-val">${b?.goles_a_user ?? '-'}</span>
+                        ${b?.penales_a_user ? `<span class="penalty-tag">P: ${b.penales_a_user}</span>` : ''}
+                    </div>
+                    <span>:</span>
+                    <div class="score-group">
+                        <span class="score-val">${b?.goles_b_user ?? '-'}</span>
+                        ${b?.penales_b_user ? `<span class="penalty-tag">P: ${b.penales_b_user}</span>` : ''}
+                    </div>
+                </div>
+            `;
+
             rows += `
                 <div class="wall-match ${resultClass}">
                     <div class="team-left">
                         <img class="flag" src="${flagURL(m.equipo_a)}">
                         ${m.equipo_a}
                     </div>
-                    <div class="score-display">
-                        <span class="score-val">${b?.goles_a_user ?? '-'}</span>
-                        <span>:</span>
-                        <span class="score-val">${b?.goles_b_user ?? '-'}</span>
-                    </div>
+                    ${scoreUI}
                     <div class="team-right">
                         ${m.equipo_b}
                         <img class="flag" src="${flagURL(m.equipo_b)}">
@@ -363,6 +374,7 @@ async function loadOtherUserPredictions(userId) {
 async function renderWallChart(filterPhase = "Grupos"){
 
 const container=document.getElementById("groups-wall-container")
+container.innerHTML = `<p class="empty-msg">Cargando partidos de ${filterPhase}...</p>`;
 
 const {data:matches,error:e1}=await _sb
 .from("partidos")
@@ -375,135 +387,129 @@ const {data:bets,error:e2}=await _sb
 .eq("perfil_id",window.currentUser.id)
 
 if(e1 || e2){
-
 console.log(e1,e2)
 container.innerHTML="Error cargando partidos"
 return
-
 }
 
-// Filtrar según la fase
+// Determinar si es fase de grupos o eliminación directa
+const isGroups = filterPhase === "Grupos";
+
 let filteredMatches = matches.filter(m => {
-    if (filterPhase === "Grupos") return m.grupo.length === 1;
+    if (isGroups) return m.grupo.length === 1; // Solo grupos A-H
     return m.grupo.toLowerCase() === filterPhase.toLowerCase();
 });
-
-let grupos={}
-
-filteredMatches.forEach(m=>{
-
-if(!grupos[m.grupo]) grupos[m.grupo]=[]
-grupos[m.grupo].push(m)
-
-})
 
 container.innerHTML=""
 
 if (filteredMatches.length === 0) {
-    container.innerHTML = `<p class="empty-msg">No hay partidos programados para la fase: ${filterPhase}</p>`;
+    container.innerHTML = `<p class="empty-msg">No hay partidos programados para la fase: ${filterPhase.toUpperCase()}</p>`;
     return;
 }
 
-Object.keys(grupos).forEach((g, index)=>{
+// Vista de Grupos (Grid)
+if (isGroups) {
+    let grupos={}
+    filteredMatches.forEach(m=>{
+        if(!grupos[m.grupo]) grupos[m.grupo]=[]
+        grupos[m.grupo].push(m)
+    })
 
-let rows=""
+    Object.keys(grupos).forEach((g, index)=>{
+        let rows=""
+        grupos[g].forEach(m=>{
+            const b=bets?.find(x=>x.partido_id===m.id)
+            let resultClass = getResultClass(m, b);
 
-grupos[g].forEach(m=>{
+            rows+=`
+                <div class="wall-match ${resultClass}">
+                    <div class="team-left">
+                        <img class="flag" src="${flagURL(m.equipo_a)}">
+                        ${m.equipo_a}
+                    </div>
+                    <div class="score-inputs">
+                        <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${quinielaGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                        <span>-</span>
+                        <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${quinielaGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                    </div>
+                    <div class="team-right">
+                        ${m.equipo_b}
+                        <img class="flag" src="${flagURL(m.equipo_b)}">
+                    </div>
+                </div>
+            `;
+        })
 
-const b=bets?.find(x=>x.partido_id===m.id)
+        container.innerHTML+=`
+            <div class="group-wall" style="animation-delay: ${index * 0.1}s">
+                <h3>GRUPO ${g}</h3>
+                ${rows}
+            </div>
+        `;
+    })
+} 
+// Vista de Eliminación Directa (Lista una debajo de otra)
+else {
+    let rows = "";
+    filteredMatches.forEach((m, index) => {
+        const b = bets?.find(x => x.partido_id === m.id);
+        let resultClass = getResultClass(m, b);
 
-let resultClass=""
+        rows += `
+            <div class="knockout-match ${resultClass}" style="animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${index * 0.1}s">
+                <div class="team-left knockout-team">
+                    <img class="flag-large" src="${flagURL(m.equipo_a)}">
+                    <span>${m.equipo_a}</span>
+                </div>
+                
+                <div class="score-inputs knockout-scores">
+                    <div class="score-group">
+                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${quinielaGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                        <div class="penalty-input-container" title="Penales si hay empate">
+                            <span class="penalty-label">P</span>
+                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${quinielaGuardada ? "disabled":""} value="${b?.penales_a_user ?? ''}">
+                        </div>
+                    </div>
+                    
+                    <span class="vs-text">VS</span>
+                    
+                    <div class="score-group">
+                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${quinielaGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                        <div class="penalty-input-container" title="Penales si hay empate">
+                            <span class="penalty-label">P</span>
+                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${quinielaGuardada ? "disabled":""} value="${b?.penales_b_user ?? ''}">
+                        </div>
+                    </div>
+                </div>
 
-if(m.goles_a!=null && m.goles_b!=null && b){
+                <div class="team-right knockout-team">
+                    <span>${m.equipo_b}</span>
+                    <img class="flag-large" src="${flagURL(m.equipo_b)}">
+                </div>
+            </div>
+        `;
+    });
 
-if(b.goles_a_user==m.goles_a && b.goles_b_user==m.goles_b){
-
-resultClass="correct"
-
-}else{
-
-let real=""
-let user=""
-
-if(m.goles_a>m.goles_b) real="A"
-else if(m.goles_b>m.goles_a) real="B"
-else real="E"
-
-if(b.goles_a_user>b.goles_b_user) user="A"
-else if(b.goles_b_user>b.goles_a_user) user="B"
-else user="E"
-
-if(real===user){
-
-resultClass="close"
-
-}else{
-
-resultClass="wrong"
-
+    container.innerHTML = `
+        <div class="knockout-list-container">
+            <h2 class="knockout-title">${filterPhase.toUpperCase()}</h2>
+            <p class="knockout-hint">En caso de empate después de 120', usa los campos de <strong>P</strong> (Penales) para decidir quién avanza.</p>
+            ${rows}
+        </div>
+    `;
 }
 
 }
 
-}
-
-rows+=`
-
-<div class="wall-match ${resultClass}">
-
-<div class="team-left">
-<img class="flag" src="${flagURL(m.equipo_a)}">
-${m.equipo_a}
-</div>
-
-<div class="score-inputs">
-
-<input type="number"
-class="wall-input"
-data-id="${m.id}"
-data-side="a"
-${quinielaGuardada ? "disabled":""}
-value="${b?.goles_a_user ?? ''}">
-
-<span>-</span>
-
-<input type="number"
-class="wall-input"
-data-id="${m.id}"
-data-side="b"
-${quinielaGuardada ? "disabled":""}
-value="${b?.goles_b_user ?? ''}">
-
-</div>
-
-<div class="team-right">
-
-${m.equipo_b}
-
-<img class="flag" src="${flagURL(m.equipo_b)}">
-
-</div>
-
-</div>
-
-`
-
-})
-
-container.innerHTML+=`
-
-<div class="group-wall" style="animation-delay: ${index * 0.1}s">
-
-<h3>GRUPO ${g}</h3>
-
-${rows}
-
-</div>
-
-`
-
-})
-
+function getResultClass(m, b) {
+    if (m.goles_a == null || m.goles_b == null || !b) return "";
+    
+    if (b.goles_a_user == m.goles_a && b.goles_b_user == m.goles_b) return "correct";
+    
+    let real = m.goles_a > m.goles_b ? "A" : (m.goles_b > m.goles_a ? "B" : "E");
+    let user = b.goles_a_user > b.goles_b_user ? "A" : (b.goles_b_user > b.goles_a_user ? "B" : "E");
+    
+    return (real === user) ? "close" : "wrong";
 }
 
 
@@ -511,51 +517,44 @@ ${rows}
 async function savePredictions(){
 
 if(quinielaGuardada){
-
 alert("La quiniela ya fue guardada")
 return
-
 }
 
-const inputs=document.querySelectorAll(".wall-input")
+const inputs = document.querySelectorAll(".wall-input, .penalty-input")
 
 let bets={}
 
 inputs.forEach(i=>{
-
 const id=i.dataset.id
 const side=i.dataset.side
 
 if(!bets[id]) bets[id]={}
 
 bets[id][side]=i.value
-
 })
 
 for(const matchId in bets){
-
-const a=bets[matchId].a
-const b=bets[matchId].b
+const a = bets[matchId].a
+const b = bets[matchId].b
+const pa = bets[matchId].pa || null // Penales A
+const pb = bets[matchId].pb || null // Penales B
 
 if(a==="" || b==="") continue
 
 await _sb.from("pronosticos").insert({
-
 perfil_id:window.currentUser.id,
 partido_id:matchId,
 goles_a_user:a,
-goles_b_user:b
-
+goles_b_user:b,
+penales_a_user: pa,
+penales_b_user: pb
 })
-
 }
 
 quinielaGuardada=true
-
 alert("Quiniela guardada")
-
-showTab("Grupos")
-
+showTab(currentTab)
 }
 
 
