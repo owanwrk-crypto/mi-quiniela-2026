@@ -107,13 +107,56 @@ SALIR
 🏆 GRUPOS
 </button>
 
+<button class="tab-btn" onclick="showTab('16avos')">
+🥊 16AVOS
+</button>
+
+<button class="tab-btn" onclick="showTab('Octavos')">
+🔥 OCTAVOS
+</button>
+
+<button class="tab-btn" onclick="showTab('Cuartos')">
+⚡ CUARTOS
+</button>
+
+<button class="tab-btn" onclick="showTab('Semifinal')">
+⭐ SEMI
+</button>
+
+<button class="tab-btn" onclick="showTab('Final')">
+👑 FINAL
+</button>
+
 <button class="tab-btn" onclick="showTab('Ranking')">
 🥇 RANKING
+</button>
+
+<button class="tab-btn" onclick="showTab('Pronosticos')">
+🔍 PRONÓSTICOS
 </button>
 
 <button class="tab-btn" onclick="showTab('Reglas')">
 📜 REGLAS
 </button>
+
+</div>
+
+
+
+<!-- PRONÓSTICOS DE OTROS -->
+
+<div id="predictions-others-section" style="display:none">
+
+<div class="search-box">
+<label for="user-search">🔍 BUSCAR JUGADOR:</label>
+<select id="user-search" onchange="loadOtherUserPredictions(this.value)">
+<option value="">Selecciona un jugador...</option>
+</select>
+</div>
+
+<div id="predictions-display-container">
+<p class="empty-msg">Selecciona un jugador para ver sus pronósticos.</p>
+</div>
 
 </div>
 

@@ -228,11 +228,21 @@ document.getElementById("wall-chart-section").style.display="none"
 document.getElementById("ranking-list").style.display="none"
 document.getElementById("save-btn").style.display="none"
 document.getElementById("rules-section").style.display="none"
+document.getElementById("predictions-others-section").style.display="none"
+
+const phases = ['Grupos', '16avos', 'Octavos', 'Cuartos', 'Semifinal', 'Final'];
 
 if(tab==="Ranking"){
 
 document.getElementById("ranking-list").style.display="block"
 loadRanking()
+
+}
+
+if(tab==="Pronosticos"){
+
+document.getElementById("predictions-others-section").style.display="block"
+loadUserList()
 
 }
 
@@ -242,7 +252,7 @@ document.getElementById("rules-section").style.display="block"
 
 }
 
-if(tab==="Grupos"){
+if(phases.includes(tab)){
 
 document.getElementById("wall-chart-section").style.display="block"
 
@@ -252,7 +262,7 @@ document.getElementById("save-btn").style.display="block"
 
 }
 
-renderWallChart()
+renderWallChart(tab)
 
 }
 
@@ -260,14 +270,104 @@ renderWallChart()
 
 
 
-async function renderWallChart(){
+async function loadUserList() {
+    const select = document.getElementById("user-search");
+    const { data: users, error } = await _sb.from("perfiles").select("id, nombre").order("nombre");
+    
+    if (error) return;
+    
+    // Guardar la opción actual para no perderla al refrescar la lista
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">Selecciona un jugador...</option>';
+    
+    users.forEach(u => {
+        // No mostrar al usuario actual si quieres, o dejarlo
+        select.innerHTML += `<option value="${u.id}">${u.nombre}</option>`;
+    });
+    
+    select.value = currentVal;
+}
+
+async function loadOtherUserPredictions(userId) {
+    if (!userId) {
+        document.getElementById("predictions-display-container").innerHTML = '<p class="empty-msg">Selecciona un jugador para ver sus pronósticos.</p>';
+        return;
+    }
+
+    const container = document.getElementById("predictions-display-container");
+    container.innerHTML = '<p class="empty-msg">Cargando pronósticos...</p>';
+
+    const { data: matches, error: e1 } = await _sb.from("partidos").select("*").order("id");
+    const { data: bets, error: e2 } = await _sb.from("pronosticos").select("*").eq("perfil_id", userId);
+
+    if (e1 || e2) {
+        container.innerHTML = '<p class="empty-msg">Error cargando datos.</p>';
+        return;
+    }
+
+    // Agrupar por fase (usaremos el campo "grupo" o si existe "fase", por ahora agrupemos por lo disponible)
+    // Asumiremos que el campo 'grupo' contiene la fase si no es A-H
+    let phases = {};
+    matches.forEach(m => {
+        let phaseName = m.grupo.length === 1 ? `GRUPO ${m.grupo}` : m.grupo;
+        if (!phases[phaseName]) phases[phaseName] = [];
+        phases[phaseName].push(m);
+    });
+
+    container.innerHTML = "";
+
+    Object.keys(phases).forEach((p, idx) => {
+        let rows = "";
+        phases[p].forEach(m => {
+            const b = bets?.find(x => x.partido_id === m.id);
+            
+            // Lógica de colores (reutilizada de renderWallChart)
+            let resultClass = "";
+            if (m.goles_a != null && m.goles_b != null && b) {
+                if (b.goles_a_user == m.goles_a && b.goles_b_user == m.goles_b) resultClass = "correct";
+                else {
+                    let real = m.goles_a > m.goles_b ? "A" : (m.goles_b > m.goles_a ? "B" : "E");
+                    let user = b.goles_a_user > b.goles_b_user ? "A" : (b.goles_b_user > b.goles_a_user ? "B" : "E");
+                    resultClass = (real === user) ? "close" : "wrong";
+                }
+            }
+
+            rows += `
+                <div class="wall-match ${resultClass}">
+                    <div class="team-left">
+                        <img class="flag" src="${flagURL(m.equipo_a)}">
+                        ${m.equipo_a}
+                    </div>
+                    <div class="score-display">
+                        <span class="score-val">${b?.goles_a_user ?? '-'}</span>
+                        <span>:</span>
+                        <span class="score-val">${b?.goles_b_user ?? '-'}</span>
+                    </div>
+                    <div class="team-right">
+                        ${m.equipo_b}
+                        <img class="flag" src="${flagURL(m.equipo_b)}">
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML += `
+            <div class="group-wall" style="animation-delay: ${idx * 0.1}s; margin-bottom: 30px;">
+                <h3>${p}</h3>
+                ${rows}
+            </div>
+        `;
+    });
+}
+
+async function renderWallChart(filterPhase = "Grupos"){
 
 const container=document.getElementById("groups-wall-container")
 
 const {data:matches,error:e1}=await _sb
 .from("partidos")
 .select("*")
-.order("grupo")
+.order("id")
 
 const {data:bets,error:e2}=await _sb
 .from("pronosticos")
@@ -282,9 +382,15 @@ return
 
 }
 
+// Filtrar según la fase
+let filteredMatches = matches.filter(m => {
+    if (filterPhase === "Grupos") return m.grupo.length === 1;
+    return m.grupo.toLowerCase() === filterPhase.toLowerCase();
+});
+
 let grupos={}
 
-matches.forEach(m=>{
+filteredMatches.forEach(m=>{
 
 if(!grupos[m.grupo]) grupos[m.grupo]=[]
 grupos[m.grupo].push(m)
@@ -292,6 +398,11 @@ grupos[m.grupo].push(m)
 })
 
 container.innerHTML=""
+
+if (filteredMatches.length === 0) {
+    container.innerHTML = `<p class="empty-msg">No hay partidos programados para la fase: ${filterPhase}</p>`;
+    return;
+}
 
 Object.keys(grupos).forEach((g, index)=>{
 
