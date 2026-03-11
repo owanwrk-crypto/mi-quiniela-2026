@@ -5,7 +5,8 @@ const _sb = supabase.createClient(URL_SB, KEY_SB)
 
 let currentTab="Grupos"
 window.currentUser=null
-let quinielaGuardada=false
+// Ya no usaremos una variable global única para el bloqueo
+let pronosticosUsuario = []; 
 
 
 function getFlag(team){
@@ -200,12 +201,9 @@ const {data,error}=await _sb
 .from("pronosticos")
 .select("*")
 .eq("perfil_id",window.currentUser.id)
-.limit(1)
 
-if(data && data.length>0){
-
-quinielaGuardada=true
-
+if(data){
+pronosticosUsuario = data;
 }
 
 }
@@ -400,6 +398,11 @@ let filteredMatches = matches.filter(m => {
     return m.grupo.toLowerCase() === filterPhase.toLowerCase();
 });
 
+// Comprobar si ya se guardó esta fase (al menos un partido con pronóstico)
+const faseGuardada = filteredMatches.some(m => 
+    pronosticosUsuario.some(p => p.partido_id === m.id)
+);
+
 container.innerHTML=""
 
 if (filteredMatches.length === 0) {
@@ -428,9 +431,9 @@ if (isGroups) {
                         ${m.equipo_a}
                     </div>
                     <div class="score-inputs">
-                        <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${quinielaGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                        <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
                         <span>-</span>
-                        <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${quinielaGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                        <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                     </div>
                     <div class="team-right">
                         ${m.equipo_b}
@@ -464,20 +467,20 @@ else {
                 
                 <div class="score-inputs knockout-scores">
                     <div class="score-group">
-                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${quinielaGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
                         <div class="penalty-input-container" title="Penales si hay empate">
                             <span class="penalty-label">P</span>
-                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${quinielaGuardada ? "disabled":""} value="${b?.penales_a_user ?? ''}">
+                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${faseGuardada ? "disabled":""} value="${b?.penales_a_user ?? ''}">
                         </div>
                     </div>
                     
                     <span class="vs-text">VS</span>
                     
                     <div class="score-group">
-                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${quinielaGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                        <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                         <div class="penalty-input-container" title="Penales si hay empate">
                             <span class="penalty-label">P</span>
-                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${quinielaGuardada ? "disabled":""} value="${b?.penales_b_user ?? ''}">
+                            <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${faseGuardada ? "disabled":""} value="${b?.penales_b_user ?? ''}">
                         </div>
                     </div>
                 </div>
@@ -499,6 +502,13 @@ else {
     `;
 }
 
+// Ocultar botón de guardar si la fase ya está bloqueada
+if (faseGuardada) {
+    document.getElementById("save-btn").style.display = "none";
+}
+
+}
+
 }
 
 function getResultClass(m, b) {
@@ -516,10 +526,9 @@ function getResultClass(m, b) {
 
 async function savePredictions(){
 
-if(quinielaGuardada){
-alert("La quiniela ya fue guardada")
-return
-}
+// Pedir confirmación antes de guardar
+const confirmacion = confirm("¿Estás seguro de tus pronósticos? Una vez guardados, no podrás modificarlos para esta fase.");
+if(!confirmacion) return;
 
 const inputs = document.querySelectorAll(".wall-input, .penalty-input")
 
@@ -543,19 +552,20 @@ const pb = bets[matchId].pb || null // Penales B
 if(a==="" || b==="") continue
 
 await _sb.from("pronosticos").insert({
-perfil_id:window.currentUser.id,
-partido_id:matchId,
-goles_a_user:a,
-goles_b_user:b,
-penales_a_user: pa,
-penales_b_user: pb
-})
-}
+  perfil_id:window.currentUser.id,
+  partido_id:matchId,
+  goles_a_user:a,
+  goles_b_user:b,
+  penales_a_user: pa,
+  penales_b_user: pb
+  })
+  }
 
-quinielaGuardada=true
-alert("Quiniela guardada")
-showTab(currentTab)
-}
+  // Actualizar el estado local y la UI
+  await checkQuinielaGuardada();
+  alert("Pronósticos guardados correctamente.");
+  showTab(currentTab);
+  }
 
 
 
