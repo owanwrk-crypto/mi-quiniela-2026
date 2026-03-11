@@ -145,7 +145,11 @@ const {data:pronosticos} = await _sb.from("pronosticos").select("*")
 if(!perfiles || !matches || !pronosticos) return
 
 // Filtrar administradores para las estadísticas globales
-const jugadores = perfiles.filter(p => p.rol !== 'admin' && p.nombre.toUpperCase() !== 'ADMIN' && p.es_admin !== true);
+const jugadores = perfiles.filter(p => {
+    const nombre = (p.nombre || "").trim().toUpperCase();
+    const rol = (p.rol || "").trim().toLowerCase();
+    return rol !== 'admin' && nombre !== 'ADMIN' && p.es_admin !== true;
+});
 
 let ranking = []
 
@@ -229,6 +233,28 @@ document.getElementById("stat-accuracy").innerText = `${myData.porcentaje}%`
 
 // --- FUNCIONES DE ADMINISTRADOR ---
 
+function showAdminSubTab(tabId) {
+    // Ocultar todos los contenidos
+    document.querySelectorAll('.admin-subtab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    // Quitar clase active de todos los botones
+    document.querySelectorAll('.admin-subtab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Mostrar el seleccionado
+    document.getElementById(`admin-subtab-${tabId}`).style.display = 'block';
+    
+    // Activar el botón correspondiente
+    event.currentTarget.classList.add('active');
+
+    // Cargar datos según la pestaña
+    if (tabId === 'users') adminLoadUsers();
+    if (tabId === 'matches') adminLoadMatches(document.getElementById('admin-match-phase').value);
+}
+
 async function adminLoadUsers() {
     const container = document.getElementById("admin-users-list");
     const { data: users, error } = await _sb.from("perfiles").select("*").order("nombre");
@@ -237,7 +263,10 @@ async function adminLoadUsers() {
 
     container.innerHTML = users.map(u => `
         <div class="admin-item">
-            <span><strong>${u.nombre}</strong> (PIN: ${u.pin})</span>
+            <div class="admin-user-info">
+                <strong>${u.nombre}</strong>
+                <span>PIN: ${u.pin}</span>
+            </div>
             <button class="btn-small-danger" onclick="adminDeleteUser('${u.id}')">ELIMINAR</button>
         </div>
     `).join("");
@@ -288,15 +317,23 @@ async function adminLoadMatches(fase) {
 
     container.innerHTML = filtered.map(m => `
         <div class="admin-item-match">
-            <div class="match-info-small">${m.equipo_a} vs ${m.equipo_b}</div>
+            <div class="match-info-small">
+                <strong>${m.equipo_a} vs ${m.equipo_b}</strong>
+            </div>
             <div class="admin-inputs">
                 <input type="number" id="admin-ga-${m.id}" value="${m.goles_a ?? ''}" placeholder="G">
+                <span>-</span>
                 <input type="number" id="admin-gb-${m.id}" value="${m.goles_b ?? ''}" placeholder="G">
+                
                 ${m.grupo.length > 1 ? `
-                    <input type="number" id="admin-pa-${m.id}" value="${m.penales_a ?? ''}" placeholder="P">
-                    <input type="number" id="admin-pb-${m.id}" value="${m.penales_b ?? ''}" placeholder="P">
+                    <div class="admin-penalties">
+                        <input type="number" id="admin-pa-${m.id}" value="${m.penales_a ?? ''}" placeholder="P">
+                        <span>:</span>
+                        <input type="number" id="admin-pb-${m.id}" value="${m.penales_b ?? ''}" placeholder="P">
+                    </div>
                 ` : ''}
-                <button class="btn-save-small" onclick="adminUpdateMatch('${m.id}', '${m.grupo}')">💾</button>
+                
+                <button class="btn-save-small" onclick="adminUpdateMatch('${m.id}', '${m.grupo}')" title="Guardar">💾</button>
             </div>
         </div>
     `).join("");
@@ -421,16 +458,22 @@ renderWallChart(tab).catch(err => {
 
 async function loadUserList() {
     const select = document.getElementById("user-search");
-    const { data: users, error } = await _sb.from("perfiles").select("id, nombre").order("nombre");
+    const { data: users, error } = await _sb.from("perfiles").select("*").order("nombre");
     
     if (error || !users) return;
+
+    // Filtrar administradores para no mostrarlos en la búsqueda de pronósticos
+    const jugadores = users.filter(p => {
+        const nombre = (p.nombre || "").trim().toUpperCase();
+        const rol = (p.rol || "").trim().toLowerCase();
+        return rol !== 'admin' && nombre !== 'ADMIN' && p.es_admin !== true;
+    });
 
     // Guardar la opción actual para no perderla al refrescar la lista
     const currentVal = select.value;
     select.innerHTML = '<option value="">Selecciona un jugador...</option>';
     
-    users.forEach(u => {
-        // No mostrar al usuario actual si quieres, o dejarlo
+    jugadores.forEach(u => {
         select.innerHTML += `<option value="${u.id}">${u.nombre}</option>`;
     });
     
@@ -766,7 +809,11 @@ if(e1 || e2 || e3){
 }
 
 // Filtrar administradores para el ranking
-const jugadores = perfiles.filter(p => p.rol !== 'admin' && p.nombre.toUpperCase() !== 'ADMIN' && p.es_admin !== true);
+const jugadores = perfiles.filter(p => {
+    const nombre = (p.nombre || "").trim().toUpperCase();
+    const rol = (p.rol || "").trim().toLowerCase();
+    return rol !== 'admin' && nombre !== 'ADMIN' && p.es_admin !== true;
+});
 
 let ranking = []
 

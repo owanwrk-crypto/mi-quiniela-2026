@@ -153,25 +153,17 @@ SALIR
 
 <div class="admin-container">
 
-<div class="admin-grid">
-
-<!-- GESTIÓN DE USUARIOS -->
-<div class="admin-card">
-<h3>👥 GESTIÓN DE JUGADORES</h3>
-<div class="admin-form">
-<input type="text" id="new-user-name" placeholder="Nombre del jugador">
-<input type="text" id="new-user-pin" placeholder="PIN (4 dígitos)">
-<button class="btn-admin-action" onclick="adminAddUser()">REGISTRAR JUGADOR</button>
-</div>
-<div id="admin-users-list" class="admin-list">
-<!-- Lista de usuarios cargada por JS -->
-</div>
+<div class="admin-header-tabs">
+<button class="admin-subtab-btn active" onclick="showAdminSubTab('matches')">⚽ PARTIDOS</button>
+<button class="admin-subtab-btn" onclick="showAdminSubTab('users')">👥 JUGADORES</button>
+<button class="admin-subtab-btn" onclick="showAdminSubTab('danger')">⚠️ SISTEMA</button>
 </div>
 
-<!-- GESTIÓN DE RESULTADOS -->
-<div class="admin-card">
-<h3>⚽ ACTUALIZAR RESULTADOS</h3>
-<div class="search-box" style="margin-bottom: 15px;">
+<!-- SUB-TAB: PARTIDOS -->
+<div id="admin-subtab-matches" class="admin-subtab-content">
+<div class="admin-card full-width">
+<h3>⚽ ACTUALIZAR RESULTADOS REALES</h3>
+<div class="admin-filter-bar">
 <select id="admin-match-phase" onchange="adminLoadMatches(this.value)">
 <option value="Grupos">Fase de Grupos</option>
 <option value="16avos">16avos de Final</option>
@@ -185,14 +177,30 @@ SALIR
 <!-- Lista de partidos cargada por JS -->
 </div>
 </div>
-
-<!-- LIMPIEZA DE DATOS -->
-<div class="admin-card danger-zone">
-<h3>⚠️ ZONA DE PELIGRO</h3>
-<p>Borra todos los pronósticos registrados para empezar de cero o limpiar pruebas.</p>
-<button class="btn-danger" onclick="adminResetPredictions()">BORRAR TODOS LOS PRONÓSTICOS</button>
 </div>
 
+<!-- SUB-TAB: JUGADORES -->
+<div id="admin-subtab-users" class="admin-subtab-content" style="display:none">
+<div class="admin-card full-width">
+<h3>👥 GESTIÓN DE JUGADORES</h3>
+<div class="admin-form-inline">
+<input type="text" id="new-user-name" placeholder="Nombre">
+<input type="text" id="new-user-pin" placeholder="PIN (4 dígitos)">
+<button class="btn-admin-action" onclick="adminAddUser()">REGISTRAR</button>
+</div>
+<div id="admin-users-list" class="admin-list-grid">
+<!-- Lista de usuarios cargada por JS -->
+</div>
+</div>
+</div>
+
+<!-- SUB-TAB: PELIGRO -->
+<div id="admin-subtab-danger" class="admin-subtab-content" style="display:none">
+<div class="admin-card danger-zone centered">
+<h3>⚠️ REINICIO DEL SISTEMA</h3>
+<p>Esta acción es irreversible. Se borrarán todos los pronósticos guardados por todos los usuarios para todas las fases.</p>
+<button class="btn-danger-large" onclick="adminResetPredictions()">BORRAR TODOS LOS PRONÓSTICOS</button>
+</div>
 </div>
 
 </div>
