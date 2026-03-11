@@ -216,6 +216,14 @@ function showTab(tab){
 
 currentTab=tab
 
+// Actualizar resaltado de botones de tab
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.innerText.includes(tab.toUpperCase())) {
+        btn.classList.add('active');
+    }
+});
+
 document.getElementById("wall-chart-section").style.display="none"
 document.getElementById("ranking-list").style.display="none"
 document.getElementById("save-btn").style.display="none"
