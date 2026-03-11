@@ -196,7 +196,7 @@ grupos[m.grupo].push(m)
 
 container.innerHTML=""
 
-Object.keys(grupos).forEach(g=>{
+Object.keys(grupos).forEach((g, index)=>{
 
 let rows=""
 
@@ -284,7 +284,7 @@ ${m.equipo_b}
 
 container.innerHTML+=`
 
-<div class="group-wall">
+<div class="group-wall" style="animation-delay: ${index * 0.1}s">
 
 <h3>GRUPO ${g}</h3>
 
@@ -467,7 +467,7 @@ highlight="highlight-player"
 
 tbody.innerHTML+=`
 
-<tr class="${highlight}">
+<tr class="${highlight}" style="animation: groupEntry 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${i * 0.05}s">
 <td>${i+1}</td>
 <td>${medal}</td>
 <td>${r.nombre}</td>
