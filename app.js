@@ -102,20 +102,31 @@ try {
     document.getElementById("login-section").style.display="none"
     document.getElementById("main-section").style.display="block"
 
-    document.getElementById("user-display").innerText=`JUGADOR: ${user.nombre}`
+    // Es Administrador?
+    const isAdmin = user.rol === 'admin' || user.nombre.toUpperCase() === 'ADMIN' || user.es_admin === true;
 
-    // Ejecutamos estas funciones, pero si fallan no bloqueamos el inicio
-    try {
-        await checkQuinielaGuardada()
-    } catch (e) {
-        console.error("Error en checkQuinielaGuardada:", e)
+    if(isAdmin) {
+        // Modo Administrador: Ocultar pestañas de juego y mostrar panel admin
+        document.querySelector(".tabs-container").style.display = "none";
+        document.getElementById("user-display").innerText = "MODO ADMINISTRADOR";
+        showTab("Admin");
+    } else {
+        // Modo Jugador: Mostrar pestañas y flujo normal
+        document.querySelector(".tabs-container").style.display = "flex";
+        document.getElementById("user-display").innerText = `JUGADOR: ${user.nombre}`;
+        
+        // Ejecutamos estas funciones, pero si fallan no bloqueamos el inicio
+        try {
+            await checkQuinielaGuardada()
+        } catch (e) {
+            console.error("Error en checkQuinielaGuardada:", e)
+        }
+
+        showTab("Grupos");
+
+        // Cargamos estadísticas en segundo plano
+        updateGlobalStats().catch(e => console.error("Error en updateGlobalStats:", e))
     }
-
-    // Llamamos a showTab inmediatamente para no hacer esperar al usuario
-    showTab("Grupos")
-
-    // Cargamos estadísticas en segundo plano
-    updateGlobalStats().catch(e => console.error("Error en updateGlobalStats:", e))
 } catch (err) {
     console.error("Error en login:", err)
     alert("Error de conexión al servidor.")
@@ -133,9 +144,12 @@ const {data:pronosticos} = await _sb.from("pronosticos").select("*")
 
 if(!perfiles || !matches || !pronosticos) return
 
+// Filtrar administradores para las estadísticas globales
+const jugadores = perfiles.filter(p => p.rol !== 'admin' && p.nombre.toUpperCase() !== 'ADMIN' && p.es_admin !== true);
+
 let ranking = []
 
-perfiles.forEach(p=>{
+jugadores.forEach(p=>{
 
 let puntos=0
 let total=0
@@ -194,6 +208,112 @@ puntos:puntos,
 porcentaje: total ? Math.round((aciertos/total)*100) : 0
 })
 
+}
+
+// --- FUNCIONES DE ADMINISTRADOR ---
+
+async function adminLoadUsers() {
+    const container = document.getElementById("admin-users-list");
+    const { data: users, error } = await _sb.from("perfiles").select("*").order("nombre");
+    
+    if (error) return;
+
+    container.innerHTML = users.map(u => `
+        <div class="admin-item">
+            <span><strong>${u.nombre}</strong> (PIN: ${u.pin})</span>
+            <button class="btn-small-danger" onclick="adminDeleteUser('${u.id}')">ELIMINAR</button>
+        </div>
+    `).join("");
+}
+
+async function adminAddUser() {
+    const name = document.getElementById("new-user-name").value;
+    const pin = document.getElementById("new-user-pin").value;
+
+    if (!name || !pin) {
+        alert("Completa todos los campos");
+        return;
+    }
+
+    const { error } = await _sb.from("perfiles").insert({ nombre: name, pin: pin });
+
+    if (error) {
+        alert("Error al registrar: " + error.message);
+    } else {
+        alert("Jugador registrado");
+        document.getElementById("new-user-name").value = "";
+        document.getElementById("new-user-pin").value = "";
+        adminLoadUsers();
+    }
+}
+
+async function adminDeleteUser(id) {
+    if (!confirm("¿Seguro que quieres eliminar a este jugador? Se borrarán también sus pronósticos.")) return;
+    
+    // Primero borrar pronósticos (por integridad)
+    await _sb.from("pronosticos").delete().eq("perfil_id", id);
+    const { error } = await _sb.from("perfiles").delete().eq("id", id);
+
+    if (error) alert("Error: " + error.message);
+    else adminLoadUsers();
+}
+
+async function adminLoadMatches(fase) {
+    const container = document.getElementById("admin-matches-list");
+    const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
+
+    if (error) return;
+
+    const filtered = matches.filter(m => {
+        if (fase === "Grupos") return m.grupo.length === 1 || m.grupo.toUpperCase().includes("GRUPO");
+        return m.grupo.toLowerCase() === fase.toLowerCase();
+    });
+
+    container.innerHTML = filtered.map(m => `
+        <div class="admin-item-match">
+            <div class="match-info-small">${m.equipo_a} vs ${m.equipo_b}</div>
+            <div class="admin-inputs">
+                <input type="number" id="admin-ga-${m.id}" value="${m.goles_a ?? ''}" placeholder="G">
+                <input type="number" id="admin-gb-${m.id}" value="${m.goles_b ?? ''}" placeholder="G">
+                ${m.grupo.length > 1 ? `
+                    <input type="number" id="admin-pa-${m.id}" value="${m.penales_a ?? ''}" placeholder="P">
+                    <input type="number" id="admin-pb-${m.id}" value="${m.penales_b ?? ''}" placeholder="P">
+                ` : ''}
+                <button class="btn-save-small" onclick="adminUpdateMatch('${m.id}', '${m.grupo}')">💾</button>
+            </div>
+        </div>
+    `).join("");
+}
+
+async function adminUpdateMatch(id, grupo) {
+    const ga = document.getElementById(`admin-ga-${id}`).value;
+    const gb = document.getElementById(`admin-gb-${id}`).value;
+    
+    let updateData = {
+        goles_a: ga === "" ? null : parseInt(ga),
+        goles_b: gb === "" ? null : parseInt(gb)
+    };
+
+    if (grupo.length > 1) {
+        const pa = document.getElementById(`admin-pa-${id}`).value;
+        const pb = document.getElementById(`admin-pb-${id}`).value;
+        updateData.penales_a = pa === "" ? null : parseInt(pa);
+        updateData.penales_b = pb === "" ? null : parseInt(pb);
+    }
+
+    const { error } = await _sb.from("partidos").update(updateData).eq("id", id);
+
+    if (error) alert("Error: " + error.message);
+    else alert("Resultado actualizado");
+}
+
+async function adminResetPredictions() {
+    if (!confirm("⚠️ ADVERTENCIA: Se borrarán TODOS los pronósticos de TODOS los jugadores. ¿Continuar?")) return;
+    
+    const { error } = await _sb.from("pronosticos").delete().neq("id", "00000000-0000-0000-0000-000000000000"); // Borrar todo
+
+    if (error) alert("Error: " + error.message);
+    else alert("Sistema reseteado correctamente");
 })
 
 ranking.sort((a,b)=> b.puntos - a.puntos)
@@ -235,7 +355,9 @@ currentTab=tab
 // Actualizar resaltado de botones de tab
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.remove('active');
-    if (btn.innerText.includes(tab.toUpperCase())) {
+    // Comprobar si el atributo onclick contiene el nombre de la pestaña exacta
+    const onclickAttr = btn.getAttribute('onclick') || "";
+    if (onclickAttr.includes(`'${tab}'`) || onclickAttr.includes(`"${tab}"`)) {
         btn.classList.add('active');
     }
 });
@@ -245,6 +367,7 @@ document.getElementById("ranking-list").style.display="none"
 document.getElementById("save-btn").style.display="none"
 document.getElementById("rules-section").style.display="none"
 document.getElementById("predictions-others-section").style.display="none"
+document.getElementById("admin-section").style.display="none"
 
 const phases = ['Grupos', '16avos', 'Octavos', 'Cuartos', 'Semifinal', 'Final'];
 
@@ -259,6 +382,14 @@ if(tab==="Pronosticos"){
 
 document.getElementById("predictions-others-section").style.display="block"
 loadUserList()
+
+}
+
+if(tab==="Admin"){
+
+document.getElementById("admin-section").style.display="block"
+adminLoadUsers()
+adminLoadMatches("Grupos")
 
 }
 
@@ -620,16 +751,17 @@ const {data:matches,error:e2} = await _sb.from("partidos").select("*")
 const {data:pronosticos,error:e3} = await _sb.from("pronosticos").select("*")
 
 if(e1 || e2 || e3){
-
-console.log(e1,e2,e3)
-tbody.innerHTML="<tr><td colspan='5'>Error cargando ranking</td></tr>"
-return
-
+    console.error(e1,e2,e3)
+    tbody.innerHTML="<tr><td colspan='5'>Error cargando ranking</td></tr>"
+    return
 }
+
+// Filtrar administradores para el ranking
+const jugadores = perfiles.filter(p => p.rol !== 'admin' && p.nombre.toUpperCase() !== 'ADMIN' && p.es_admin !== true);
 
 let ranking = []
 
-perfiles.forEach(p=>{
+jugadores.forEach(p=>{
 
 let puntos=0
 let total=0

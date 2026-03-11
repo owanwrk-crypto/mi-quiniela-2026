@@ -840,6 +840,144 @@ header h1 {
   margin-top: 2px;
 }
 
+/* ADMIN PANEL */
+.admin-container {
+  padding: 20px 0;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+.admin-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 25px;
+}
+
+.admin-card h3 {
+  font-family: var(--font-header);
+  color: var(--accent);
+  font-size: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.admin-form input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+}
+
+.btn-admin-action {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.btn-small-danger {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.admin-list-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-item-match {
+  background: rgba(255,255,255,0.03);
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.match-info-small {
+  font-size: 12px;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+.admin-inputs {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.admin-inputs input {
+  width: 45px;
+  height: 35px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #000;
+  color: #fff;
+}
+
+.btn-save-small {
+  background: var(--green);
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.danger-zone {
+  border-color: var(--red);
+}
+
+.btn-danger {
+  width: 100%;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: 800;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
 @media (max-width: 992px) {
   .login-page-wrapper {
     flex-direction: column;
