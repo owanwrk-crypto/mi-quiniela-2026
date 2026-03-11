@@ -109,8 +109,48 @@ header h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  padding: 20px;
+  min-height: 70vh;
+  padding: 40px 20px;
+}
+
+.login-page-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 80px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.hero-content {
+  flex: 1;
+  text-align: left;
+  max-width: 500px;
+  animation: heroEntry 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes heroEntry {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hero-title {
+  font-family: var(--font-header);
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px var(--accent-glow);
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 1px;
+  line-height: 1.4;
+  opacity: 0.9;
 }
 
 .login-card {
@@ -601,6 +641,17 @@ header h1 {
 .rule-detail {
   font-size: 14px;
   opacity: 0.7;
+}
+
+@media (max-width: 992px) {
+  .login-page-wrapper {
+    flex-direction: column;
+    text-align: center;
+    gap: 40px;
+  }
+  .hero-content {
+    text-align: center;
+  }
 }
 
 @media (max-width: 768px) {
