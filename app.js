@@ -337,69 +337,62 @@ async function adminLoadMatches(fase) {
         return;
     }
 
-    // Agrupar por sub-fase (Grupo A, Grupo B, etc.) si es fase de grupos
-    let grouped = {};
-    filtered.forEach(m => {
-        const groupKey = m.grupo.length === 1 ? `GRUPO ${m.grupo}` : m.grupo.toUpperCase();
-        if (!grouped[groupKey]) grouped[groupKey] = [];
-        grouped[groupKey].push(m);
-    });
+    // Renderizado cronológico directo sin agrupar por grupo (según solicitud del usuario)
+    container.innerHTML = `
+        <div class="admin-matches-grid">
+            ${filtered.map((m, idx) => {
+                // Formatear fecha si existe
+                const fechaStr = m.fecha ? new Date(m.fecha).toLocaleString('es-MX', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                }) : 'Sin fecha';
 
-    container.innerHTML = Object.keys(grouped).map(groupName => `
-        <div class="admin-group-section">
-            <h4 class="admin-group-title">${groupName}</h4>
-            <div class="admin-matches-grid">
-                ${grouped[groupName].map((m, idx) => {
-                    // Formatear fecha si existe
-                    const fechaStr = m.fecha ? new Date(m.fecha).toLocaleString('es-MX', { 
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    }) : 'Sin fecha';
+                const groupLabel = m.grupo.length === 1 ? `GRUPO ${m.grupo}` : m.grupo.toUpperCase();
 
-                    return `
-                    <div class="admin-item-match-card" style="animation-delay: ${idx * 0.05}s">
-                        <div class="admin-match-info-top">
-                            <span class="admin-match-date">📅 ${fechaStr}</span>
+                return `
+                <div class="admin-item-match-card" style="animation-delay: ${idx * 0.05}s">
+                    <div class="admin-match-info-top">
+                        <span class="admin-match-date">📅 ${fechaStr}</span>
+                        <span class="admin-match-group-tag">${groupLabel}</span>
+                    </div>
+                    <div class="admin-match-teams">
+                        <div class="admin-team">
+                            <img src="${flagURL(m.equipo_a)}" class="flag-min">
+                            <span>${m.equipo_a}</span>
                         </div>
-                        <div class="admin-match-teams">
-                            <div class="admin-team">
-                                <img src="${flagURL(m.equipo_a)}" class="flag-min">
-                                <span>${m.equipo_a}</span>
-                            </div>
-                            <span class="admin-vs">VS</span>
-                            <div class="admin-team">
-                                <span>${m.equipo_b}</span>
-                                <img src="${flagURL(m.equipo_b)}" class="flag-min">
-                            </div>
-                        </div>
-                        
-                        <div class="admin-match-controls">
-                            <div class="admin-score-inputs">
-                                <input type="number" id="admin-ga-${m.id}" value="${m.goles_a ?? ''}" placeholder="G">
-                                <span class="sep">-</span>
-                                <input type="number" id="admin-gb-${m.id}" value="${m.goles_b ?? ''}" placeholder="G">
-                            </div>
-                            
-                            ${m.grupo.length > 1 ? `
-                                <div class="admin-penalty-inputs">
-                                    <span class="p-label">P</span>
-                                    <input type="number" id="admin-pa-${m.id}" value="${m.penales_a ?? ''}" placeholder="0">
-                                    <span class="p-sep">:</span>
-                                    <input type="number" id="admin-pb-${m.id}" value="${m.penales_b ?? ''}" placeholder="0">
-                                </div>
-                            ` : ''}
-                            
-                            <button class="btn-admin-save" onclick="adminUpdateMatch('${m.id}', '${m.grupo}')">
-                                <span>GUARDAR</span>
-                            </button>
+                        <span class="admin-vs">VS</span>
+                        <div class="admin-team">
+                            <span>${m.equipo_b}</span>
+                            <img src="${flagURL(m.equipo_b)}" class="flag-min">
                         </div>
                     </div>
-                `}).join("")}
-            </div>
+                    
+                    <div class="admin-match-controls">
+                        <div class="admin-score-inputs">
+                            <input type="number" id="admin-ga-${m.id}" value="${m.goles_a ?? ''}" placeholder="G">
+                            <span class="sep">-</span>
+                            <input type="number" id="admin-gb-${m.id}" value="${m.goles_b ?? ''}" placeholder="G">
+                        </div>
+                        
+                        ${m.grupo.length > 1 ? `
+                            <div class="admin-penalty-inputs">
+                                <span class="p-label">P</span>
+                                <input type="number" id="admin-pa-${m.id}" value="${m.penales_a ?? ''}" placeholder="0">
+                                <span class="p-sep">:</span>
+                                <input type="number" id="admin-pb-${m.id}" value="${m.penales_b ?? ''}" placeholder="0">
+                            </div>
+                        ` : ''}
+                        
+                        <button class="btn-admin-save" onclick="adminUpdateMatch('${m.id}', '${m.grupo}')">
+                            <span>GUARDAR</span>
+                        </button>
+                    </div>
+                </div>
+            `}).join("")}
         </div>
-    `).join("");
+    `;
 }
 
 async function adminUpdateMatch(id, grupo) {
