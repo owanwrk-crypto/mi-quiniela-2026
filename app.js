@@ -72,10 +72,39 @@ return flags[team] || "un"
 }
 
 function flagURL(team){
+    // Si es un placeholder (1A, 2B, etc), no mostramos bandera o mostramos una genérica
+    if (isPlaceholder(team)) return "https://flagcdn.com/w40/un.png";
+    const code=getFlag(team)
+    return `https://flagcdn.com/w40/${code}.png`
+}
 
-const code=getFlag(team)
-return `https://flagcdn.com/w40/${code}.png`
+/**
+ * Detecta si el nombre del equipo es un placeholder (ej: 1A, 2B, 1N)
+ */
+function isPlaceholder(name) {
+    if (!name) return true;
+    // Regex para detectar 1A, 2B, 3C, etc.
+    return /^[123][A-Z]$/.test(name);
+}
 
+/**
+ * Formatea nombres de equipos, traduciendo placeholders (1A -> 1º Grupo A)
+ */
+function formatTeamName(name) {
+    if (!name || name.trim() === "" || name.toUpperCase() === "TBD") return "Por Definir";
+    
+    const match = name.match(/^([123])([A-Z])$/);
+    if (match) {
+        const pos = match[1];
+        const group = match[2];
+        
+        // Alerta visual si el grupo excede la L (Mundial 2026 tiene A-L)
+        const warning = group > 'L' ? ' ⚠️' : '';
+        
+        return `${pos}º Grupo ${group}${warning}`;
+    }
+    
+    return name;
 }
 
 
@@ -359,14 +388,14 @@ async function adminLoadMatches(fase) {
                     </div>
                     <div class="admin-match-teams">
                         <div class="admin-team">
-                            <img src="${flagURL(m.equipo_a)}" class="flag-min">
-                            <span>${m.equipo_a}</span>
-                        </div>
-                        <span class="admin-vs">VS</span>
-                        <div class="admin-team">
-                            <span>${m.equipo_b}</span>
-                            <img src="${flagURL(m.equipo_b)}" class="flag-min">
-                        </div>
+                                <img src="${flagURL(m.equipo_a)}" class="flag-min">
+                                <span>${formatTeamName(m.equipo_a)}</span>
+                            </div>
+                            <span class="admin-vs">VS</span>
+                            <div class="admin-team">
+                                <span>${formatTeamName(m.equipo_b)}</span>
+                                <img src="${flagURL(m.equipo_b)}" class="flag-min">
+                            </div>
                     </div>
                     
                     <div class="admin-match-controls">
@@ -585,12 +614,12 @@ function renderBracketMatch(m, isFinal = false) {
         <div class="bracket-match-card ${isPending ? 'pending' : ''} ${isFinal ? 'final-card' : ''}">
             <div class="bracket-team-row ${winA ? 'winner-glow' : ''}">
                 <img src="${flagURL(m.equipo_a)}" class="bracket-flag">
-                <span class="team-name">${m.equipo_a || 'TBD'}</span>
+                <span class="team-name">${formatTeamName(m.equipo_a)}</span>
                 <span class="team-score">${m.goles_a ?? ''}</span>
             </div>
             <div class="bracket-team-row ${winB ? 'winner-glow' : ''}">
                 <img src="${flagURL(m.equipo_b)}" class="bracket-flag">
-                <span class="team-name">${m.equipo_b || 'TBD'}</span>
+                <span class="team-name">${formatTeamName(m.equipo_b)}</span>
                 <span class="team-score">${m.goles_b ?? ''}</span>
             </div>
             ${m.penales_a !== null ? `<div class="bracket-penalties">P: ${m.penales_a}-${m.penales_b}</div>` : ''}
@@ -1064,7 +1093,7 @@ try {
                     <div class="wall-match ${resultClass}">
                         <div class="team-left">
                             <img class="flag" src="${flagURL(m.equipo_a)}">
-                            <span>${m.equipo_a || 'TBD'}</span>
+                            <span>${formatTeamName(m.equipo_a)}</span>
                         </div>
                         <div class="score-inputs">
                             <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
@@ -1072,7 +1101,7 @@ try {
                             <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                         </div>
                         <div class="team-right">
-                            <span>${m.equipo_b || 'TBD'}</span>
+                            <span>${formatTeamName(m.equipo_b)}</span>
                             <img class="flag" src="${flagURL(m.equipo_b)}">
                         </div>
                     </div>
@@ -1098,7 +1127,7 @@ try {
                 <div class="knockout-match ${resultClass}" style="animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${index * 0.1}s">
                     <div class="team-left knockout-team">
                         <img class="flag-large" src="${flagURL(m.equipo_a)}">
-                        <span>${m.equipo_a || 'Por Definir'}</span>
+                        <span>${formatTeamName(m.equipo_a)}</span>
                     </div>
                     
                     <div class="score-inputs knockout-scores">
@@ -1122,7 +1151,7 @@ try {
                     </div>
 
                     <div class="team-right knockout-team">
-                        <span>${m.equipo_b || 'Por Definir'}</span>
+                        <span>${formatTeamName(m.equipo_b)}</span>
                         <img class="flag-large" src="${flagURL(m.equipo_b)}">
                     </div>
                 </div>
