@@ -920,78 +920,89 @@ async function loadOtherUserPredictions(userId) {
     const container = document.getElementById("predictions-display-container");
     container.innerHTML = '<p class="empty-msg">Cargando pronósticos...</p>';
 
-    const { data: matches, error: e1 } = await _sb.from("partidos").select("*").order("id");
-    const { data: bets, error: e2 } = await _sb.from("pronosticos").select("*").eq("perfil_id", userId);
+    try {
+        const { data: matches, error: e1 } = await _sb.from("partidos").select("*").order("id");
+        const { data: bets, error: e2 } = await _sb.from("pronosticos").select("*").eq("perfil_id", userId);
 
-    if (e1 || e2) {
-        container.innerHTML = '<p class="empty-msg">Error cargando datos.</p>';
-        return;
-    }
+        if (e1 || e2) {
+            container.innerHTML = '<p class="empty-msg">Error cargando datos.</p>';
+            return;
+        }
 
-    // Agrupar por fase (usaremos el campo "grupo" o si existe "fase", por ahora agrupemos por lo disponible)
-    // Asumiremos que el campo 'grupo' contiene la fase si no es A-H
-    let phases = {};
-    matches.forEach(m => {
-        let phaseName = m.grupo.length === 1 ? `GRUPO ${m.grupo}` : m.grupo;
-        if (!phases[phaseName]) phases[phaseName] = [];
-        phases[phaseName].push(m);
-    });
-
-    container.innerHTML = "";
-
-    Object.keys(phases).forEach((p, idx) => {
-        let rows = "";
-        phases[p].forEach(m => {
-            const b = bets?.find(x => x.partido_id === m.id);
+        // Agrupar por fase de manera consistente
+        let phases = {};
+        matches.forEach(m => {
+            const g = (m.grupo || "").trim().toUpperCase();
+            let phaseName = "";
             
-            // Lógica de colores (reutilizada de renderWallChart)
-            let resultClass = "";
-            if (m.goles_a != null && m.goles_b != null && b) {
-                if (b.goles_a_user == m.goles_a && b.goles_b_user == m.goles_b) resultClass = "correct";
-                else {
-                    let real = m.goles_a > m.goles_b ? "A" : (m.goles_b > m.goles_a ? "B" : "E");
-                    let user = b.goles_a_user > b.goles_b_user ? "A" : (b.goles_b_user > b.goles_a_user ? "B" : "E");
-                    resultClass = (real === user) ? "close" : "wrong";
-                }
+            if (g.length === 1 || g.includes("GRUPO")) {
+                phaseName = g.length === 1 ? `GRUPO ${g}` : g;
+            } else {
+                phaseName = g;
             }
+            
+            if (!phases[phaseName]) phases[phaseName] = [];
+            phases[phaseName].push(m);
+        });
 
-            // Renderizado de scores y penales
-            let scoreUI = `
-                <div class="score-display">
-                    <div class="score-group">
-                        <span class="score-val">${b?.goles_a_user ?? '-'}</span>
-                        ${b?.penales_a_user ? `<span class="penalty-tag">P: ${b.penales_a_user}</span>` : ''}
-                    </div>
-                    <span>:</span>
-                    <div class="score-group">
-                        <span class="score-val">${b?.goles_b_user ?? '-'}</span>
-                        ${b?.penales_b_user ? `<span class="penalty-tag">P: ${b.penales_b_user}</span>` : ''}
-                    </div>
-                </div>
-            `;
+        container.innerHTML = "";
 
-            rows += `
-                <div class="wall-match ${resultClass}">
-                    <div class="team-left">
-                        <img class="flag" src="${flagURL(m.equipo_a)}">
-                        ${m.equipo_a}
+        // Ordenar las fases (Grupos primero, luego eliminación)
+        const sortedPhases = Object.keys(phases).sort((a, b) => {
+            if (a.includes("GRUPO") && !b.includes("GRUPO")) return -1;
+            if (!a.includes("GRUPO") && b.includes("GRUPO")) return 1;
+            return a.localeCompare(b);
+        });
+
+        sortedPhases.forEach((p, idx) => {
+            let rows = "";
+            phases[p].forEach(m => {
+                const b = bets?.find(x => x.partido_id === m.id);
+                
+                // Lógica de colores unificada
+                let resultClass = getResultClass(m, b);
+
+                // Renderizado de scores y penales
+                let scoreUI = `
+                    <div class="score-display">
+                        <div class="score-group">
+                            <span class="score-val">${b?.goles_a_user ?? '-'}</span>
+                            ${b?.penales_a_user != null ? `<span class="penalty-tag">P: ${b.penales_a_user}</span>` : ''}
+                        </div>
+                        <span>:</span>
+                        <div class="score-group">
+                            <span class="score-val">${b?.goles_b_user ?? '-'}</span>
+                            ${b?.penales_b_user != null ? `<span class="penalty-tag">P: ${b.penales_b_user}</span>` : ''}
+                        </div>
                     </div>
-                    ${scoreUI}
-                    <div class="team-right">
-                        ${m.equipo_b}
-                        <img class="flag" src="${flagURL(m.equipo_b)}">
+                `;
+
+                rows += `
+                    <div class="wall-match ${resultClass}">
+                        <div class="team-left">
+                            <img class="flag" src="${flagURL(m.equipo_a)}">
+                            <span>${formatTeamName(m.equipo_a)}</span>
+                        </div>
+                        ${scoreUI}
+                        <div class="team-right">
+                            <span>${formatTeamName(m.equipo_b)}</span>
+                            <img class="flag" src="${flagURL(m.equipo_b)}">
+                        </div>
                     </div>
+                `;
+            });
+
+            container.innerHTML += `
+                <div class="group-wall" style="animation-delay: ${idx * 0.1}s; margin-bottom: 30px;">
+                    <h3>${p}</h3>
+                    ${rows}
                 </div>
             `;
         });
-
-        container.innerHTML += `
-            <div class="group-wall" style="animation-delay: ${idx * 0.1}s; margin-bottom: 30px;">
-                <h3>${p}</h3>
-                ${rows}
-            </div>
-        `;
-    });
+    } catch (error) {
+        console.error("Error en loadOtherUserPredictions:", error);
+        container.innerHTML = '<p class="empty-msg">Error inesperado al cargar pronósticos.</p>';
+    }
 }
 
 async function renderWallChart(filterPhase = "Grupos"){
@@ -1200,40 +1211,63 @@ if(!confirmacion) return;
 
 const inputs = document.querySelectorAll(".wall-input, .penalty-input")
 
-let bets={}
+let betsData={}
 
 inputs.forEach(i=>{
-const id=i.dataset.id
-const side=i.dataset.side
-
-if(!bets[id]) bets[id]={}
-
-bets[id][side]=i.value
+    const id=i.dataset.id
+    const side=i.dataset.side
+    if(!betsData[id]) betsData[id]={}
+    betsData[id][side]=i.value
 })
 
-for(const matchId in bets){
-const a = bets[matchId].a
-const b = bets[matchId].b
-const pa = bets[matchId].pa || null // Penales A
-const pb = bets[matchId].pb || null // Penales B
+let dataToUpsert = [];
 
-if(a==="" || b==="") continue
+for(const matchId in betsData){
+    const a = betsData[matchId].a
+    const b = betsData[matchId].b
+    const pa = betsData[matchId].pa || null // Penales A
+    const pb = betsData[matchId].pb || null // Penales B
 
-await _sb.from("pronosticos").insert({
-  perfil_id:window.currentUser.id,
-  partido_id:matchId,
-  goles_a_user:a,
-  goles_b_user:b,
-  penales_a_user: pa,
-  penales_b_user: pb
-  })
-  }
+    // Solo guardamos si ambos campos de goles están llenos
+    if(a==="" || b==="") continue
 
-  // Actualizar el estado local y la UI
-  await checkQuinielaGuardada();
-  alert("Pronósticos guardados correctamente.");
-  showTab(currentTab);
-  }
+    dataToUpsert.push({
+        perfil_id: window.currentUser.id,
+        partido_id: matchId,
+        goles_a_user: parseInt(a),
+        goles_b_user: parseInt(b),
+        penales_a_user: pa !== null && pa !== "" ? parseInt(pa) : null,
+        penales_b_user: pb !== null && pb !== "" ? parseInt(pb) : null
+    });
+}
+
+if (dataToUpsert.length === 0) {
+    alert("No hay pronósticos válidos para guardar.");
+    return;
+}
+
+try {
+    // Usamos upsert para evitar duplicados si ya existen registros
+    const { error } = await _sb.from("pronosticos").upsert(dataToUpsert, { onConflict: 'perfil_id,partido_id' });
+
+    if (error) {
+        console.error("Error al guardar pronósticos:", error);
+        alert("Hubo un error al guardar tus pronósticos: " + error.message);
+        return;
+    }
+
+    // Actualizar el estado local y la UI
+    await checkQuinielaGuardada();
+    // Forzar actualización de estadísticas y ranking
+    await updateGlobalStats();
+    
+    alert("Pronósticos guardados correctamente.");
+    showTab(currentTab);
+} catch (e) {
+    console.error("Excepción al guardar:", e);
+    alert("Error inesperado al guardar.");
+}
+}
 
 
 
@@ -1319,6 +1353,7 @@ if(real === user){
 let porcentaje = total ? Math.round((aciertos/total)*100) : 0
 
 ranking.push({
+id: p.id,
 nombre:p.nombre,
 puntos:puntos,
 porcentaje:porcentaje
