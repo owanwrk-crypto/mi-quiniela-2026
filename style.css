@@ -727,126 +727,236 @@ input[type=number] {
   border-color: var(--accent);
 }
 
-/* --- BRACKET / LLAVE MÁGICA --- */
+/* --- BRACKET / LLAVE MÁGICA EVOLVED --- */
 .bracket-wrapper {
   padding: 40px 0;
-  overflow: hidden;
+  position: relative;
 }
 
 .bracket-main-title {
   font-family: var(--font-header);
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 60px;
   color: var(--accent);
-  letter-spacing: 5px;
-  text-shadow: 0 0 15px var(--accent-glow);
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  text-shadow: 0 0 20px var(--accent-glow);
+  animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
 }
 
 .bracket-scroll-container {
   overflow-x: auto;
-  padding: 40px 20px;
-  display: flex;
-  justify-content: center;
+  padding: 60px 40px;
+  background: radial-gradient(circle at center, rgba(0, 242, 255, 0.03) 0%, transparent 70%);
+  border-radius: 40px;
 }
 
 .bracket-container {
   display: flex;
-  gap: 60px;
-  align-items: center;
+  gap: 100px;
+  align-items: flex-start;
   min-width: max-content;
+  position: relative;
 }
 
+/* COLUMNAS */
 .bracket-column {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  gap: 30px;
-  min-width: 220px;
+  gap: 40px;
+  animation: columnEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.bracket-column h4 {
+@keyframes columnEntry {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.column-header {
   font-family: var(--font-header);
-  font-size: 10px;
-  letter-spacing: 2px;
-  opacity: 0.5;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: var(--accent);
   text-align: center;
-  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--accent-glow);
 }
 
-.bracket-match {
+.column-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  justify-content: space-around;
+  height: 100%;
+}
+
+/* CAJAS DE GRUPOS */
+.bracket-group-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.group-label {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  background: var(--bg-deep);
+  padding: 2px 10px;
+  font-size: 10px;
+  font-family: var(--font-header);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* TARJETAS DE PARTIDO */
+.bracket-match-card {
   background: var(--glass);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px;
+  padding: 12px;
+  width: 240px;
   position: relative;
-  transition: all 0.3s ease;
-  width: 220px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.bracket-match:hover {
+.bracket-match-card:hover {
+  transform: scale(1.05) translateX(5px);
   border-color: var(--accent);
-  transform: scale(1.05);
-  z-index: 10;
+  box-shadow: 0 0 20px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.bracket-team {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.bracket-team.winner {
-  background: rgba(0, 242, 255, 0.1);
-  color: var(--accent);
-}
-
-.bracket-team img {
-  width: 20px;
-  height: 14px;
-  object-fit: cover;
-  border-radius: 2px;
-}
-
-.bracket-score {
-  margin-left: auto;
-  font-weight: 900;
+.match-id-tag {
+  position: absolute;
+  right: 10px;
+  top: -8px;
+  font-size: 8px;
+  opacity: 0.3;
   font-family: var(--font-header);
 }
 
-.bracket-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
+.bracket-team-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin: 2px 0;
+  transition: all 0.3s;
 }
 
-/* LÍNEAS CONECTORAS */
-.bracket-match::after {
+.bracket-flag {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 3px;
+  filter: grayscale(0.2);
+}
+
+.team-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.team-score {
+  font-family: var(--font-header);
+  font-weight: 900;
+  color: var(--accent);
+  min-width: 20px;
+  text-align: right;
+}
+
+/* EFECTO GANADOR */
+.winner-glow {
+  background: rgba(0, 242, 255, 0.15);
+  box-shadow: inset 0 0 10px var(--accent-glow);
+  color: #fff;
+}
+
+.winner-glow .team-name {
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.bracket-penalties {
+  font-size: 9px;
+  text-align: center;
+  color: var(--accent);
+  opacity: 0.8;
+  margin-top: 5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* ESTADO PENDIENTE */
+.pending {
+  opacity: 0.6;
+  filter: saturate(0.5);
+}
+
+/* LOADER ÉPICO */
+.bracket-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 100px;
+}
+
+.loader-circle {
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* LÍNEAS DE CONEXIÓN VIRTUALES */
+.bracket-column:not(:last-child) .bracket-match-card::after {
   content: "";
   position: absolute;
-  right: -30px;
+  right: -100px;
   top: 50%;
-  width: 30px;
+  width: 100px;
   height: 2px;
-  background: var(--border);
+  background: linear-gradient(90deg, var(--accent-glow), transparent);
+  z-index: -1;
+  pointer-events: none;
 }
 
-.bracket-column:last-child .bracket-match::after {
-  display: none;
-}
+.col-groups .bracket-match-card::after { width: 60px !important; right: -60px !important; }
 
-/* Ajustes para que el scrollbar no tape el diseño */
-.bracket-scroll-container::-webkit-scrollbar {
-  height: 10px;
-}
-
-@media (max-width: 1200px) {
+/* Responsive */
+@media (max-width: 768px) {
   .bracket-scroll-container {
-    justify-content: flex-start;
+    padding: 20px;
+  }
+  .bracket-container {
+    gap: 40px;
   }
 }
 .knockout-list-container {

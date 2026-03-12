@@ -428,59 +428,66 @@ async function adminUpdateMatch(id, grupo) {
 }
 
 /**
- * Renderiza la Llave Mágica (Bracket) del torneo
+ * Renderiza la Llave Mágica (Bracket) del torneo con estilo épico
  */
 async function loadBracket() {
     const container = document.getElementById("bracket-container");
-    container.innerHTML = `<p class="empty-msg">Cargando Llave Mágica...</p>`;
+    container.innerHTML = `<div class="bracket-loader">
+        <div class="loader-circle"></div>
+        <p>SINCRONIZANDO LLAVE MÁGICA...</p>
+    </div>`;
 
     try {
         const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
         if (error || !matches) return;
 
-        // Definir las columnas del bracket
+        // Definir las fases del torneo incluyendo GRUPOS
         const phases = [
-            { id: "16AVOS", label: "16AVOS DE FINAL" },
-            { id: "OCTAVOS", label: "OCTAVOS" },
-            { id: "CUARTOS", label: "CUARTOS" },
-            { id: "SEMIFINAL", label: "SEMIFINAL" },
-            { id: "FINAL", label: "FINAL" }
+            { id: "GRUPOS", label: "FASE DE GRUPOS", class: "col-groups" },
+            { id: "16AVOS", label: "16AVOS", class: "col-16" },
+            { id: "OCTAVOS", label: "OCTAVOS", class: "col-8" },
+            { id: "CUARTOS", label: "CUARTOS", class: "col-4" },
+            { id: "SEMIFINAL", label: "SEMI", class: "col-2" },
+            { id: "FINAL", label: "FINAL", class: "col-1" }
         ];
 
         container.innerHTML = "";
 
-        phases.forEach(phase => {
+        phases.forEach((phase, pIdx) => {
             const phaseMatches = matches.filter(m => {
                 const g = (m.grupo || "").toUpperCase();
+                if (phase.id === "GRUPOS") return g.length === 1 || g.includes("GRUPO");
                 return g === phase.id || g.includes(phase.id) || (phase.id === "SEMIFINAL" && g.includes("SEMI"));
             });
 
             if (phaseMatches.length > 0) {
-                let matchCards = phaseMatches.map(m => {
-                    const winA = m.goles_a !== null && m.goles_b !== null && (m.goles_a > m.goles_b || (m.goles_a === m.goles_b && m.penales_a > m.penales_b));
-                    const winB = m.goles_a !== null && m.goles_b !== null && (m.goles_b > m.goles_a || (m.goles_a === m.goles_b && m.penales_b > m.penales_a));
+                // Si es grupos, agrupar internamente para no hacer una columna infinita
+                let matchCards = "";
+                
+                if (phase.id === "GRUPOS") {
+                    // Agrupar por grupo A, B, C...
+                    let groupsObj = {};
+                    phaseMatches.forEach(m => {
+                        if(!groupsObj[m.grupo]) groupsObj[m.grupo] = [];
+                        groupsObj[m.grupo].push(m);
+                    });
 
-                    return `
-                        <div class="bracket-match">
-                            <div class="bracket-team ${winA ? 'winner' : ''}">
-                                <img src="${flagURL(m.equipo_a)}">
-                                <span>${m.equipo_a || 'TBD'}</span>
-                                <span class="bracket-score">${m.goles_a ?? ''}</span>
-                            </div>
-                            <div class="bracket-divider"></div>
-                            <div class="bracket-team ${winB ? 'winner' : ''}">
-                                <img src="${flagURL(m.equipo_b)}">
-                                <span>${m.equipo_b || 'TBD'}</span>
-                                <span class="bracket-score">${m.goles_b ?? ''}</span>
-                            </div>
+                    matchCards = Object.keys(groupsObj).sort().map(gName => `
+                        <div class="bracket-group-box">
+                            <div class="group-label">GRUPO ${gName}</div>
+                            ${groupsObj[gName].map(m => renderBracketMatch(m)).join("")}
                         </div>
-                    `;
-                }).join("");
+                    `).join("");
+                } else {
+                    matchCards = phaseMatches.map(m => renderBracketMatch(m)).join("");
+                }
 
                 container.innerHTML += `
-                    <div class="bracket-column">
-                        <h4>${phase.label}</h4>
-                        ${matchCards}
+                    <div class="bracket-column ${phase.class}" style="animation-delay: ${pIdx * 0.1}s">
+                        <div class="column-header">${phase.label}</div>
+                        <div class="column-matches">
+                            ${matchCards}
+                        </div>
                     </div>
                 `;
             }
@@ -488,8 +495,37 @@ async function loadBracket() {
 
     } catch (e) {
         console.error("Error cargando bracket:", e);
-        container.innerHTML = `<p class="empty-msg">Error al cargar la llave.</p>`;
+        container.innerHTML = `<p class="empty-msg">ERROR EN EL NÚCLEO DE LA LLAVE</p>`;
     }
+}
+
+function renderBracketMatch(m) {
+    const winA = m.goles_a !== null && m.goles_b !== null && (m.goles_a > m.goles_b || (m.goles_a === m.goles_b && m.penales_a > m.penales_b));
+    const winB = m.goles_a !== null && m.goles_b !== null && (m.goles_b > m.goles_a || (m.goles_a === m.goles_b && m.penales_b > m.penales_a));
+    
+    // Si no hay goles pero el equipo ya está definido, es un partido pendiente
+    const isPending = m.goles_a === null && m.goles_b === null;
+
+    return `
+        <div class="bracket-match-card ${isPending ? 'pending' : ''}">
+            <div class="match-id-tag">#${m.id}</div>
+            <div class="bracket-team-row ${winA ? 'winner-glow' : ''}">
+                <img src="${flagURL(m.equipo_a)}" class="bracket-flag">
+                <span class="team-name">${m.equipo_a || 'TBD'}</span>
+                <span class="team-score">${m.goles_a ?? '-'}</span>
+            </div>
+            <div class="bracket-team-row ${winB ? 'winner-glow' : ''}">
+                <img src="${flagURL(m.equipo_b)}" class="bracket-flag">
+                <span class="team-name">${m.equipo_b || 'TBD'}</span>
+                <span class="team-score">${m.goles_b ?? '-'}</span>
+            </div>
+            ${m.penales_a !== null ? `
+                <div class="bracket-penalties">
+                    P: ${m.penales_a} - ${m.penales_b}
+                </div>
+            ` : ''}
+        </div>
+    `;
 }
 
 /**
