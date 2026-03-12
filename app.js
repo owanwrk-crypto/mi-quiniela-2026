@@ -623,70 +623,59 @@ pronosticosUsuario = data;
 
 
 
-function showTab(tab){
+function showTab(tab) {
+    currentTab = tab;
 
-currentTab=tab
+    // 1. Ocultamos TODAS las secciones principales primero
+    const sections = [
+        'wall-chart-section', 
+        'ranking-list', 
+        'rules-section', 
+        'admin-section', 
+        'predictions-others-section',
+        'save-btn'
+    ];
+    
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
 
-// Actualizar resaltado de botones de tab
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-    // Comprobar si el atributo onclick contiene el nombre de la pestaña exacta
-    const onclickAttr = btn.getAttribute('onclick') || "";
-    if (onclickAttr.includes(`'${tab}'`) || onclickAttr.includes(`"${tab}"`)) {
-        btn.classList.add('active');
+    // 2. Quitamos la clase active de todos los botones de tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        // Comprobar si el atributo onclick contiene el nombre de la pestaña exacta
+        const onclickAttr = btn.getAttribute('onclick') || "";
+        if (onclickAttr.includes(`'${tab}'`) || onclickAttr.includes(`"${tab}"`)) {
+            btn.classList.add('active');
+        }
+    });
+
+    // 3. Lógica para mostrar la sección correcta
+    if (tab === "Ranking") {
+        document.getElementById("ranking-list").style.display = "block";
+        loadRanking();
+    } else if (tab === "Pronosticos") {
+        document.getElementById("predictions-others-section").style.display = "block";
+        loadUserList();
+    } else if (tab === "Admin") {
+        document.getElementById("admin-section").style.display = "block";
+        adminLoadUsers();
+        adminLoadMatches("Grupos");
+    } else if (tab === "Reglas") {
+        document.getElementById("rules-section").style.display = "block";
+    } else {
+        // Fases: Grupos, 16avos, Octavos, Cuartos, Semifinal, Final
+        document.getElementById("wall-chart-section").style.display = "block";
+        document.getElementById("save-btn").style.display = "block";
+        
+        console.log("Cargando fase:", tab);
+        renderWallChart(tab).catch(err => {
+            console.error("Error en renderWallChart:", err);
+            const container = document.getElementById("groups-wall-container");
+            if(container) container.innerHTML = `<div class="empty-msg">Error fatal: ${err.message}</div>`;
+        });
     }
-});
-
-document.getElementById("wall-chart-section").style.display="none"
-document.getElementById("ranking-list").style.display="none"
-document.getElementById("save-btn").style.display="none"
-document.getElementById("rules-section").style.display="none"
-document.getElementById("predictions-others-section").style.display="none"
-document.getElementById("admin-section").style.display="none"
-
-const phases = ['Grupos', '16avos', 'Octavos', 'Cuartos', 'Semifinal', 'Final'];
-
-if(tab==="Ranking"){
-
-document.getElementById("ranking-list").style.display="block"
-loadRanking()
-
-}
-
-if(tab==="Pronosticos"){
-
-document.getElementById("predictions-others-section").style.display="block"
-loadUserList()
-
-}
-
-if(tab==="Admin"){
-
-document.getElementById("admin-section").style.display="block"
-adminLoadUsers()
-adminLoadMatches("Grupos")
-
-}
-
-if(tab==="Reglas"){
-
-document.getElementById("rules-section").style.display="block"
-
-}
-
-if(phases.includes(tab)){
-
-document.getElementById("wall-chart-section").style.display="block"
-document.getElementById("save-btn").style.display="block"
-
-console.log("Cargando fase:", tab)
-renderWallChart(tab).catch(err => {
-    console.error("Error en renderWallChart:", err)
-    document.getElementById("groups-wall-container").innerHTML = `<div class="empty-msg">Error fatal: ${err.message}</div>`
-})
-
-}
-
 }
 
 
@@ -841,14 +830,17 @@ try {
             return g.length === 1 || g.includes("GRUPO"); 
         }
         
-        // Mapeo flexible de fases para asegurar que coincidan con la DB
+        // Mapeo flexible pero con prioridad a coincidencia exacta para evitar vacíos
+        if (g === phase) return true;
+        
+        // Búsqueda por palabras clave para mayor compatibilidad con la DB
         if (phase === "16AVOS" && (g.includes("16") || g.includes("DIECI"))) return true;
         if (phase === "OCTAVOS" && (g.includes("OCTAVO") || g.includes("8VOS"))) return true;
         if (phase === "CUARTOS" && (g.includes("CUARTO") || g.includes("4TOS"))) return true;
         if ((phase === "SEMIFINAL" || phase === "SEMI") && (g.includes("SEMI"))) return true;
         if (phase === "FINAL" && g === "FINAL") return true;
         
-        return g === phase || g.includes(phase);
+        return g.includes(phase);
     });
 
     if (isGroups && filteredMatches.length === 0) {
