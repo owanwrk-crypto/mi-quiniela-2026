@@ -428,70 +428,102 @@ async function adminUpdateMatch(id, grupo) {
 }
 
 /**
- * Renderiza la Llave Mágica (Bracket) del torneo con estilo épico
+ * Renderiza la Llave Mágica Simétrica: Grupos arriba, Eliminatorias abajo (Espejo)
  */
 async function loadBracket() {
     const container = document.getElementById("bracket-container");
-    container.innerHTML = `<div class="bracket-loader">
-        <div class="loader-circle"></div>
-        <p>SINCRONIZANDO LLAVE MÁGICA...</p>
-    </div>`;
+    container.innerHTML = `<div class="bracket-loader"><div class="loader-circle"></div><p>CONSTRUYENDO CAMINO AL CAMPEÓN...</p></div>`;
 
     try {
         const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
         if (error || !matches) return;
 
-        // Definir las fases del torneo incluyendo GRUPOS
-        const phases = [
-            { id: "GRUPOS", label: "FASE DE GRUPOS", class: "col-groups" },
-            { id: "16AVOS", label: "16AVOS", class: "col-16" },
-            { id: "OCTAVOS", label: "OCTAVOS", class: "col-8" },
-            { id: "CUARTOS", label: "CUARTOS", class: "col-4" },
-            { id: "SEMIFINAL", label: "SEMI", class: "col-2" },
-            { id: "FINAL", label: "FINAL", class: "col-1" }
-        ];
-
         container.innerHTML = "";
 
-        phases.forEach((phase, pIdx) => {
-            const phaseMatches = matches.filter(m => {
-                const g = (m.grupo || "").toUpperCase();
-                if (phase.id === "GRUPOS") return g.length === 1 || g.includes("GRUPO");
-                return g === phase.id || g.includes(phase.id) || (phase.id === "SEMIFINAL" && g.includes("SEMI"));
+        // 1. SECCIÓN SUPERIOR: GRUPOS
+        const groupsMatches = matches.filter(m => {
+            const g = (m.grupo || "").toUpperCase();
+            return g.length === 1 || g.includes("GRUPO");
+        });
+
+        if (groupsMatches.length > 0) {
+            let groupsObj = {};
+            groupsMatches.forEach(m => {
+                if(!groupsObj[m.grupo]) groupsObj[m.grupo] = [];
+                groupsObj[m.grupo].push(m);
             });
 
-            if (phaseMatches.length > 0) {
-                // Si es grupos, agrupar internamente para no hacer una columna infinita
-                let matchCards = "";
-                
-                if (phase.id === "GRUPOS") {
-                    // Agrupar por grupo A, B, C...
-                    let groupsObj = {};
-                    phaseMatches.forEach(m => {
-                        if(!groupsObj[m.grupo]) groupsObj[m.grupo] = [];
-                        groupsObj[m.grupo].push(m);
-                    });
+            let groupsHtml = Object.keys(groupsObj).sort().map(gName => `
+                <div class="bracket-group-card">
+                    <div class="group-tag">GRUPO ${gName}</div>
+                    ${groupsObj[gName].map(m => renderBracketMatchMini(m)).join("")}
+                </div>
+            `).join("");
 
-                    matchCards = Object.keys(groupsObj).sort().map(gName => `
-                        <div class="bracket-group-box">
-                            <div class="group-label">GRUPO ${gName}</div>
-                            ${groupsObj[gName].map(m => renderBracketMatch(m)).join("")}
-                        </div>
-                    `).join("");
-                } else {
-                    matchCards = phaseMatches.map(m => renderBracketMatch(m)).join("");
-                }
+            container.innerHTML += `<div class="bracket-top-groups">${groupsHtml}</div>`;
+        }
 
-                container.innerHTML += `
-                    <div class="bracket-column ${phase.class}" style="animation-delay: ${pIdx * 0.1}s">
-                        <div class="column-header">${phase.label}</div>
-                        <div class="column-matches">
-                            ${matchCards}
-                        </div>
-                    </div>
-                `;
-            }
+        // 2. SECCIÓN INFERIOR: LLAVE SIMÉTRICA
+        const phases = ["16AVOS", "OCTAVOS", "CUARTOS", "SEMIFINAL"];
+        
+        let leftSideHtml = "";
+        let rightSideHtml = "";
+
+        phases.forEach(phaseId => {
+            const phaseMatches = matches.filter(m => {
+                const g = (m.grupo || "").toUpperCase();
+                return g === phaseId || g.includes(phaseId) || (phaseId === "SEMIFINAL" && g.includes("SEMI"));
+            });
+
+            // Dividir en mitad izquierda y derecha
+            const half = Math.ceil(phaseMatches.length / 2);
+            const leftMatches = phaseMatches.slice(0, half);
+            const rightMatches = phaseMatches.slice(half);
+
+            leftSideHtml += `
+                <div class="bracket-col col-${phaseId.toLowerCase()}">
+                    <div class="col-title">${phaseId}</div>
+                    ${leftMatches.map(m => renderBracketMatch(m)).join("")}
+                </div>
+            `;
+
+            rightSideHtml = `
+                <div class="bracket-col col-${phaseId.toLowerCase()}">
+                    <div class="col-title">${phaseId}</div>
+                    ${rightMatches.map(m => renderBracketMatch(m)).join("")}
+                </div>
+            ` + rightSideHtml; // El lado derecho se construye en orden inverso visualmente
         });
+
+        // Partido Final y Campeón
+        const finalMatch = matches.find(m => (m.grupo || "").toUpperCase() === "FINAL");
+        let championHtml = "";
+        if (finalMatch) {
+            const winner = getWinnerName(finalMatch);
+            championHtml = `
+                <div class="bracket-center">
+                    <div class="final-container">
+                        <div class="col-title">GRAN FINAL</div>
+                        ${renderBracketMatch(finalMatch, true)}
+                    </div>
+                    <div class="champion-podium ${winner ? 'has-winner' : ''}">
+                        <div class="trophy-glow"></div>
+                        <i class="fas fa-trophy champion-icon"></i>
+                        <div class="champion-name">${winner || '¿QUIÉN SERÁ EL REY?'}</div>
+                        ${winner ? `<img src="${flagURL(winner)}" class="champion-flag">` : ''}
+                        <div class="champion-label">CAMPEÓN MUNDIAL 2026</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML += `
+            <div class="bracket-mirror-layout">
+                <div class="bracket-side left">${leftSideHtml}</div>
+                ${championHtml}
+                <div class="bracket-side right">${rightSideHtml}</div>
+            </div>
+        `;
 
     } catch (e) {
         console.error("Error cargando bracket:", e);
@@ -499,31 +531,49 @@ async function loadBracket() {
     }
 }
 
-function renderBracketMatch(m) {
-    const winA = m.goles_a !== null && m.goles_b !== null && (m.goles_a > m.goles_b || (m.goles_a === m.goles_b && m.penales_a > m.penales_b));
-    const winB = m.goles_a !== null && m.goles_b !== null && (m.goles_b > m.goles_a || (m.goles_a === m.goles_b && m.penales_b > m.penales_a));
-    
-    // Si no hay goles pero el equipo ya está definido, es un partido pendiente
+function getWinnerName(m) {
+    if (m.goles_a === null || m.goles_b === null) return null;
+    if (m.goles_a > m.goles_b) return m.equipo_a;
+    if (m.goles_b > m.goles_a) return m.equipo_b;
+    if (m.penales_a !== null && m.penales_b !== null) {
+        return m.penales_a > m.penales_b ? m.equipo_a : m.equipo_b;
+    }
+    return null;
+}
+
+function renderBracketMatchMini(m) {
+    const winA = m.goles_a !== null && m.goles_b !== null && m.goles_a > m.goles_b;
+    const winB = m.goles_a !== null && m.goles_b !== null && m.goles_b > m.goles_a;
+    return `
+        <div class="mini-match">
+            <span class="${winA ? 'win' : ''}">${m.equipo_a?.substring(0,3).toUpperCase() || 'TBD'}</span>
+            <span class="mini-score">${m.goles_a ?? '-'}</span>
+            <span class="vs">|</span>
+            <span class="mini-score">${m.goles_b ?? '-'}</span>
+            <span class="${winB ? 'win' : ''}">${m.equipo_b?.substring(0,3).toUpperCase() || 'TBD'}</span>
+        </div>
+    `;
+}
+
+function renderBracketMatch(m, isFinal = false) {
+    const winner = getWinnerName(m);
+    const winA = winner && winner === m.equipo_a;
+    const winB = winner && winner === m.equipo_b;
     const isPending = m.goles_a === null && m.goles_b === null;
 
     return `
-        <div class="bracket-match-card ${isPending ? 'pending' : ''}">
-            <div class="match-id-tag">#${m.id}</div>
+        <div class="bracket-match-card ${isPending ? 'pending' : ''} ${isFinal ? 'final-card' : ''}">
             <div class="bracket-team-row ${winA ? 'winner-glow' : ''}">
                 <img src="${flagURL(m.equipo_a)}" class="bracket-flag">
                 <span class="team-name">${m.equipo_a || 'TBD'}</span>
-                <span class="team-score">${m.goles_a ?? '-'}</span>
+                <span class="team-score">${m.goles_a ?? ''}</span>
             </div>
             <div class="bracket-team-row ${winB ? 'winner-glow' : ''}">
                 <img src="${flagURL(m.equipo_b)}" class="bracket-flag">
                 <span class="team-name">${m.equipo_b || 'TBD'}</span>
-                <span class="team-score">${m.goles_b ?? '-'}</span>
+                <span class="team-score">${m.goles_b ?? ''}</span>
             </div>
-            ${m.penales_a !== null ? `
-                <div class="bracket-penalties">
-                    P: ${m.penales_a} - ${m.penales_b}
-                </div>
-            ` : ''}
+            ${m.penales_a !== null ? `<div class="bracket-penalties">P: ${m.penales_a}-${m.penales_b}</div>` : ''}
         </div>
     `;
 }
