@@ -315,9 +315,14 @@ async function adminLoadMatches(fase) {
     const container = document.getElementById("admin-matches-list");
     container.innerHTML = `<div class="empty-msg">Cargando fase ${fase}...</div>`;
     
-    const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
+    // Obtenemos los partidos ordenados por fecha (asumiendo columna 'fecha')
+    const { data: matches, error } = await _sb.from("partidos").select("*").order("fecha", { ascending: true });
 
-    if (error || !matches) return;
+    if (error || !matches) {
+        console.error("Error cargando partidos admin:", error);
+        container.innerHTML = `<div class="empty-msg">Error al cargar partidos.</div>`;
+        return;
+    }
 
     const filtered = matches.filter(m => {
         const g = (m.grupo || "").trim().toUpperCase();
@@ -344,8 +349,20 @@ async function adminLoadMatches(fase) {
         <div class="admin-group-section">
             <h4 class="admin-group-title">${groupName}</h4>
             <div class="admin-matches-grid">
-                ${grouped[groupName].map((m, idx) => `
+                ${grouped[groupName].map((m, idx) => {
+                    // Formatear fecha si existe
+                    const fechaStr = m.fecha ? new Date(m.fecha).toLocaleString('es-MX', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    }) : 'Sin fecha';
+
+                    return `
                     <div class="admin-item-match-card" style="animation-delay: ${idx * 0.05}s">
+                        <div class="admin-match-info-top">
+                            <span class="admin-match-date">📅 ${fechaStr}</span>
+                        </div>
                         <div class="admin-match-teams">
                             <div class="admin-team">
                                 <img src="${flagURL(m.equipo_a)}" class="flag-min">
@@ -379,7 +396,7 @@ async function adminLoadMatches(fase) {
                             </button>
                         </div>
                     </div>
-                `).join("")}
+                `}).join("")}
             </div>
         </div>
     `).join("");

@@ -1327,9 +1327,26 @@ body:has(#bracket-section[style*="display: block"]) {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px; /* Reducido para dar espacio a la fecha */
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.admin-match-info-top {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.admin-match-date {
+  font-family: var(--font-header);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  opacity: 0.8;
+  text-transform: uppercase;
 }
 
 .admin-item-match-card:hover {
