@@ -391,31 +391,46 @@ async function adminUpdateMatch(id, grupo) {
         goles_b: gb === "" ? null : parseInt(gb)
     };
 
-    if (grupo.length > 1) {
-        const pa = document.getElementById(`admin-pa-${id}`).value;
-        const pb = document.getElementById(`admin-pb-${id}`).value;
+    // Solo intentar actualizar penales si existen los inputs en el DOM (lo que indica que la columna debería existir)
+    const paInput = document.getElementById(`admin-pa-${id}`);
+    const pbInput = document.getElementById(`admin-pb-${id}`);
+
+    if (paInput && pbInput) {
+        const pa = paInput.value;
+        const pb = pbInput.value;
         updateData.penales_a = pa === "" ? null : parseInt(pa);
         updateData.penales_b = pb === "" ? null : parseInt(pb);
     }
 
     const { error } = await _sb.from("partidos").update(updateData).eq("id", id);
 
-    if (error) alert("Error: " + error.message);
-    else alert("Resultado actualizado");
+    if (error) {
+        // Si el error es específicamente por la columna de penales, reintentar sin ellos
+        if (error.message.includes("penales_a") || error.message.includes("penales_b")) {
+            delete updateData.penales_a;
+            delete updateData.penales_b;
+            const { error: error2 } = await _sb.from("partidos").update(updateData).eq("id", id);
+            if (error2) alert("Error: " + error2.message);
+            else alert("Resultado actualizado (sin penales, columna no encontrada)");
+        } else {
+            alert("Error: " + error.message);
+        }
+    } else {
+        alert("Resultado actualizado");
+    }
 }
 
 async function adminResetMatches() {
-    if (!confirm("⚠️ ¿Estás seguro de limpiar todos los resultados reales? Se pondrán todos en blanco (Goles y Penales).")) return;
+    if (!confirm("⚠️ ¿Estás seguro de limpiar todos los resultados reales? Se pondrán todos en blanco (Goles).")) return;
     
+    // Si la columna penales_a no existe, solo actualizamos goles
     const { error } = await _sb
         .from("partidos")
         .update({
             goles_a: null,
-            goles_b: null,
-            penales_a: null,
-            penales_b: null
+            goles_b: null
         })
-        .gt("id", 0); // Actualizar todos los partidos
+        .gt("id", 0); 
 
     if (error) {
         alert("Error al limpiar resultados: " + error.message);
