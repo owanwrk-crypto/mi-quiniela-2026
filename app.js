@@ -835,16 +835,18 @@ try {
     let filteredMatches = matches.filter(m => {
         if (!m.grupo) return false;
         const g = m.grupo.trim().toUpperCase();
+        const phase = filterPhase.toUpperCase();
         
         if (isGroups) {
             return g.length === 1 || g.includes("GRUPO"); 
         }
         
-        const phase = filterPhase.toUpperCase();
-        // Permitir que "SEMIFINAL" coincida con "SEMI" y viceversa
-        if (phase === "SEMIFINAL" || phase === "SEMI") {
-            return g === "SEMIFINAL" || g === "SEMI";
-        }
+        // Mapeo flexible de fases para asegurar que coincidan con la DB
+        if (phase === "16AVOS" && (g.includes("16") || g.includes("DIECI"))) return true;
+        if (phase === "OCTAVOS" && (g.includes("OCTAVO") || g.includes("8VOS"))) return true;
+        if (phase === "CUARTOS" && (g.includes("CUARTO") || g.includes("4TOS"))) return true;
+        if ((phase === "SEMIFINAL" || phase === "SEMI") && (g.includes("SEMI"))) return true;
+        if (phase === "FINAL" && g === "FINAL") return true;
         
         return g === phase || g.includes(phase);
     });
@@ -853,14 +855,21 @@ try {
         filteredMatches = matches.filter(m => m.grupo);
     }
 
+    // Corregido: Usar 'bets' (datos frescos) en lugar de 'pronosticosUsuario' (que puede estar desactualizado)
     const faseGuardada = filteredMatches.length > 0 && filteredMatches.every(m => 
-        pronosticosUsuario.some(p => p.partido_id === m.id)
+        bets?.some(p => p.partido_id === m.id)
     );
 
     container.innerHTML=""
 
     if (filteredMatches.length === 0) {
-        container.innerHTML = `<p class="empty-msg">No hay partidos programados para la fase: ${filterPhase.toUpperCase()}</p>`;
+        console.warn(`No se encontraron partidos para la fase: ${filterPhase}. Grupo de búsqueda: ${filterPhase.toUpperCase()}`);
+        container.innerHTML = `
+            <div class="empty-msg">
+                <p>No hay partidos programados para la fase: <strong>${filterPhase.toUpperCase()}</strong></p>
+                <p style="font-size: 0.8em; opacity: 0.6; margin-top: 10px;">Si eres el administrador, asegúrate de que los partidos de esta fase estén registrados en la base de datos con el nombre de grupo correcto.</p>
+            </div>
+        `;
         return;
     }
 
@@ -868,8 +877,9 @@ try {
     if (isGroups) {
         let grupos={}
         filteredMatches.forEach(m=>{
-            if(!grupos[m.grupo]) grupos[m.grupo]=[]
-            grupos[m.grupo].push(m)
+            const gName = m.grupo || "S/G";
+            if(!grupos[gName]) grupos[gName]=[]
+            grupos[gName].push(m)
         })
 
         Object.keys(grupos).forEach((g, index)=>{
@@ -882,7 +892,7 @@ try {
                     <div class="wall-match ${resultClass}">
                         <div class="team-left">
                             <img class="flag" src="${flagURL(m.equipo_a)}">
-                            ${m.equipo_a}
+                            <span>${m.equipo_a || 'TBD'}</span>
                         </div>
                         <div class="score-inputs">
                             <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
@@ -890,7 +900,7 @@ try {
                             <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                         </div>
                         <div class="team-right">
-                            ${m.equipo_b}
+                            <span>${m.equipo_b || 'TBD'}</span>
                             <img class="flag" src="${flagURL(m.equipo_b)}">
                         </div>
                     </div>
@@ -899,7 +909,7 @@ try {
 
             container.innerHTML+=`
                 <div class="group-wall" style="animation-delay: ${index * 0.1}s">
-                    <h3>GRUPO ${g}</h3>
+                    <h3>${g.length === 1 ? 'GRUPO ' + g : g}</h3>
                     ${rows}
                 </div>
             `;
@@ -916,7 +926,7 @@ try {
                 <div class="knockout-match ${resultClass}" style="animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${index * 0.1}s">
                     <div class="team-left knockout-team">
                         <img class="flag-large" src="${flagURL(m.equipo_a)}">
-                        <span>${m.equipo_a}</span>
+                        <span>${m.equipo_a || 'Por Definir'}</span>
                     </div>
                     
                     <div class="score-inputs knockout-scores">
@@ -940,7 +950,7 @@ try {
                     </div>
 
                     <div class="team-right knockout-team">
-                        <span>${m.equipo_b}</span>
+                        <span>${m.equipo_b || 'Por Definir'}</span>
                         <img class="flag-large" src="${flagURL(m.equipo_b)}">
                     </div>
                 </div>
