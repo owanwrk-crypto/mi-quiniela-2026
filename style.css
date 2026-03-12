@@ -1190,6 +1190,28 @@ input[type=number] {
   opacity: 0.3;
 }
 
+.btn-warning-large {
+  width: 100%;
+  background: #ffcc00;
+  color: #000;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+}
+
+.btn-warning-large:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 204, 0, 0.6);
+  filter: brightness(1.1);
+}
+
 .btn-danger-large {
   background: var(--red);
   color: #fff;

@@ -404,6 +404,27 @@ async function adminUpdateMatch(id, grupo) {
     else alert("Resultado actualizado");
 }
 
+async function adminResetMatches() {
+    if (!confirm("⚠️ ¿Estás seguro de limpiar todos los resultados reales? Se pondrán todos en blanco (Goles y Penales).")) return;
+    
+    const { error } = await _sb
+        .from("partidos")
+        .update({
+            goles_a: null,
+            goles_b: null,
+            penales_a: null,
+            penales_b: null
+        })
+        .gt("id", 0); // Actualizar todos los partidos
+
+    if (error) {
+        alert("Error al limpiar resultados: " + error.message);
+    } else {
+        alert("Resultados reales limpiados correctamente. El tablero está listo.");
+        adminLoadMatches(document.getElementById('admin-match-phase').value);
+    }
+}
+
 async function adminResetPredictions() {
     if (!confirm("⚠️ ADVERTENCIA: Se borrarán TODOS los pronósticos de TODOS los jugadores. ¿Continuar?")) return;
     
