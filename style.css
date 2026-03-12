@@ -264,9 +264,14 @@ input[type=number] {
 
 /* MAIN CONTENT */
 .container {
-  max-width: 1300px;
+  max-width: 1400px; /* Slightly wider for general content */
   margin: auto;
   padding: 0 20px 60px;
+}
+
+/* Allow full width for bracket specifically */
+.container:has(#bracket-section[style*="display: block"]) {
+  max-width: 100%;
 }
 
 .user-bar {
@@ -609,8 +614,10 @@ input[type=number] {
 .close { border-left: 4px solid #ffcc00; background: rgba(255, 204, 0, 0.1) !important; }
 .wrong { border-left: 4px solid var(--red); background: rgba(255, 68, 68, 0.1) !important; }
 
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 8px; }
+/* HIDE SCROLLBARS ON BODY IF BRACKET IS ACTIVE */
+body:has(#bracket-section[style*="display: block"]) {
+  overflow-x: hidden;
+}
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-glow); }
@@ -734,9 +741,10 @@ input[type=number] {
 }
 
 .bracket-scroll-container {
-  overflow-x: auto;
-  padding: 20px;
+  overflow-x: hidden; /* No more horizontal scroll */
+  padding: 10px;
   background: radial-gradient(circle at center, rgba(0, 242, 255, 0.05) 0%, transparent 85%);
+  width: 100%;
 }
 
 /* 1. GRUPOS SUPERIORES PREMIUM */
@@ -745,18 +753,26 @@ input[type=number] {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   padding: 15px;
   border-bottom: 1px solid var(--border);
 }
 
 .bracket-group-card {
-  background: var(--glass);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px;
-  width: 130px;
+  padding: 6px;
+  width: 100px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.bracket-group-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-glow);
+  transform: translateY(-2px);
 }
 
 .group-tag {
@@ -773,9 +789,10 @@ input[type=number] {
 .mini-match {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
-  margin-bottom: 5px;
-  opacity: 0.8;
+  font-size: 9px;
+  margin-bottom: 3px;
+  opacity: 0.6;
+  font-weight: 600;
 }
 
 /* 2. LAYOUT PREMIUM FULL WIDTH */
@@ -784,48 +801,56 @@ input[type=number] {
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-width: 1800px; /* Expandido para usar todo el ancho */
-  padding: 0 20px;
+  padding: 20px;
   position: relative;
+  gap: 0;
+  overflow-x: hidden; /* No more horizontal scroll */
 }
 
 .side-wing {
   display: flex;
   flex: 1;
-  justify-content: space-between; /* Espaciado máximo entre columnas */
+  justify-content: space-around; /* Distribute columns evenly */
   align-items: center;
 }
 
 .side-wing.left {
-  padding-right: 20px;
+  padding-right: 10px;
 }
 
 .side-wing.right {
-  padding-left: 20px;
+  padding-left: 10px;
 }
 
 .bracket-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 850px;
-  flex: 1; /* Cada columna toma espacio igual */
+  height: 800px; /* Standardize height */
+  flex: 1;
   position: relative;
+  transition: all 0.5s ease;
 }
 
 .col-title-premium {
   font-family: var(--font-header);
-  font-size: 11px;
+  font-size: 9px;
   color: var(--accent);
-  letter-spacing: 4px;
-  margin-bottom: 30px;
-  opacity: 0.6;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  opacity: 0.4;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+  width: 80%;
+  text-align: center;
 }
 
 .col-title-premium.gold {
   color: #ffd700;
-  opacity: 1;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  opacity: 0.8;
+  border-color: rgba(255, 215, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .col-matches-flow {
@@ -838,29 +863,35 @@ input[type=number] {
 
 /* 3. CENTRO PREMIUM: FINAL Y CAMPEÓN */
 .bracket-center-premium {
-  width: 400px;
+  width: 320px; /* More compact center */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 60px;
+  gap: 30px;
   z-index: 10;
+  padding: 0 10px;
 }
 
 .final-glow-box {
-  background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
-  padding: 30px;
-  border-radius: 30px;
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.08) 0%, transparent 75%);
+  padding: 15px;
+  border-radius: 20px;
   border: 1px solid var(--accent-glow);
-  box-shadow: 0 0 30px var(--accent-glow);
+  box-shadow: 0 0 25px var(--accent-glow);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .champion-display {
   text-align: center;
   position: relative;
-  padding: 50px;
-  opacity: 0.2;
-  transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: scale(0.9);
+  padding: 20px;
+  opacity: 0.1;
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.85);
+  width: 100%;
 }
 
 .champion-display.revealed {
@@ -882,80 +913,84 @@ input[type=number] {
 }
 
 .champion-trophy {
-  font-size: 80px;
-  margin-bottom: 20px;
-  filter: drop-shadow(0 0 20px #ffd700);
+  font-size: 50px; /* Smaller and more elegant */
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 15px #ffd700);
   animation: trophyFloat 4s ease-in-out infinite;
 }
 
 @keyframes trophyFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
 }
 
 .champion-name-glow {
   font-family: var(--font-header);
-  font-size: 28px;
-  letter-spacing: 5px;
+  font-size: 20px; /* Reduced from 28px */
+  letter-spacing: 4px;
   color: #fff;
-  text-shadow: 0 0 20px var(--accent);
-  margin-bottom: 15px;
+  text-shadow: 0 0 15px var(--accent);
+  margin-bottom: 10px;
 }
 
 .champion-flag-large {
-  width: 120px;
-  height: 70px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 40px var(--accent-glow);
-  border: 2px solid #fff;
+  width: 80px; /* Reduced from 120px */
+  height: 48px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 30px var(--accent-glow);
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
 .champion-subtitle {
   font-family: var(--font-header);
-  font-size: 14px;
+  font-size: 11px; /* Reduced from 14px */
   color: var(--accent);
-  letter-spacing: 8px;
-  opacity: 0.8;
+  letter-spacing: 6px;
+  opacity: 0.6;
 }
 
 /* TARJETAS PREMIUM */
 .bracket-match-card {
   background: var(--glass);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  width: 200px;
+  border-radius: 12px;
+  padding: 10px;
+  width: 170px; /* More compact */
   position: relative;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 4px 15px rgba(0,0,0,0.5),
+    inset 0 1px 1px var(--glass-bright);
 }
 
 .bracket-match-card:hover {
   border-color: var(--accent);
-  transform: scale(1.1);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--accent-glow);
   z-index: 5;
 }
 
-/* LÍNEAS DE CONEXIÓN DE NEÓN */
+/* LÍNEAS DE CONEXIÓN DE NEÓN (Updated) */
 .bracket-match-card::after {
   content: "";
   position: absolute;
   top: 50%;
-  width: 40px;
-  height: 2px;
-  background: var(--accent-glow);
-  box-shadow: 0 0 10px var(--accent-glow);
+  width: 30px; /* Slightly longer to ensure connection */
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.2; /* More subtle */
+  box-shadow: 0 0 8px var(--accent);
 }
 
 /* Conectores Izquierda */
 .side-wing.left .bracket-match-card::after {
-  right: -40px;
+  right: -30px;
 }
 
 /* Conectores Derecha */
 .side-wing.right .bracket-match-card::after {
-  left: -40px;
+  left: -30px;
 }
 
 /* Corregir títulos del lado derecho para que no se amontonen */
@@ -972,26 +1007,55 @@ input[type=number] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 8px 10px;
+  font-size: 11px; /* Slightly smaller for compact layout */
+  font-weight: 700;
+  border-radius: 6px;
+  margin: 2px 0;
+  transition: all 0.3s ease;
 }
 
 .winner-glow {
-  background: linear-gradient(90deg, rgba(0, 242, 255, 0.2), transparent);
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.1), transparent);
   color: var(--accent);
-  border-radius: 6px;
   text-shadow: 0 0 10px var(--accent-glow);
 }
 
 .side-wing.right .winner-glow {
-  background: linear-gradient(-90deg, rgba(0, 242, 255, 0.2), transparent);
+  background: linear-gradient(-90deg, rgba(0, 242, 255, 0.1), transparent);
 }
 
-.bracket-flag { width: 24px; height: 14px; border-radius: 3px; }
-.team-score { font-family: var(--font-header); font-weight: 900; font-size: 16px; color: #fff; }
+.bracket-flag { 
+  width: 20px; 
+  height: 12px; 
+  border-radius: 2px; 
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
 
-.pending { opacity: 0.4; filter: grayscale(0.5); }
+.team-score { 
+  font-family: var(--font-header); 
+  font-weight: 900; 
+  font-size: 14px; 
+  color: #fff; 
+  min-width: 20px;
+  text-align: right;
+}
+
+.pending { 
+  opacity: 0.25; 
+  filter: grayscale(1) brightness(0.7); 
+  border-style: dashed;
+}
+
+.bracket-penalties {
+  font-size: 9px;
+  color: var(--accent);
+  opacity: 0.6;
+  text-align: center;
+  margin-top: 4px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
 .knockout-list-container {
   max-width: 800px;
   margin: 0 auto;
