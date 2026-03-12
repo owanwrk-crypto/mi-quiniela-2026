@@ -411,14 +411,71 @@ async function adminUpdateMatch(id, grupo) {
             delete updateData.penales_b;
             const { error: error2 } = await _sb.from("partidos").update(updateData).eq("id", id);
             if (error2) alert("Error: " + error2.message);
-            else alert("Resultado actualizado (sin penales, columna no encontrada)");
+            else {
+                alert("Resultado actualizado (sin penales)");
+                await pushWinnerToNextMatch(id, updateData);
+            }
         } else {
             alert("Error: " + error.message);
         }
     } else {
         alert("Resultado actualizado");
+        await pushWinnerToNextMatch(id, updateData);
     }
 }
+
+/**
+ * "Magia" del Bracket: Empuja al ganador al siguiente partido automáticamente.
+ */
+async function pushWinnerToNextMatch(currentMatchId, results) {
+    try {
+        // 1. Obtener los datos completos del partido actual
+        const { data: match, error } = await _sb
+            .from("partidos")
+            .select("*")
+            .eq("id", currentMatchId)
+            .single();
+
+        if (error || !match || !match.sig_partido_id) return;
+
+        let ganador = null;
+        const gA = results.goles_a;
+        const gB = results.goles_b;
+
+        // 2. Determinar ganador
+        if (gA !== null && gB !== null) {
+            if (gA > gB) {
+                ganador = match.equipo_a;
+            } else if (gB > gA) {
+                ganador = match.equipo_b;
+            } else {
+                // Empate: Ver penales (si existen en results o en el match)
+                const pA = results.penales_a ?? match.penales_a;
+                const pB = results.penales_b ?? match.penales_b;
+                
+                if (pA !== null && pB !== null) {
+                    ganador = pA > pB ? match.equipo_a : match.equipo_b;
+                }
+            }
+        }
+
+        // 3. Actualizar el siguiente partido si hay un ganador claro
+        // Si ganador es null (porque se borró el resultado), también actualizamos para limpiar el bracket
+        const columnaSiguiente = match.posicion_en_sig_partido === 'A' ? 'equipo_a' : 'equipo_b';
+        
+        const { error: updateError } = await _sb
+            .from("partidos")
+            .update({ [columnaSiguiente]: ganador })
+            .eq("id", match.sig_partido_id);
+
+        if (updateError) console.error("Error al empujar ganador:", updateError.message);
+        else console.log(`Magia aplicada: ${ganador || 'Vacío'} movido al siguiente partido.`);
+
+    } catch (e) {
+        console.error("Error en la magia del bracket:", e);
+    }
+}
+
 
 async function adminResetMatches() {
     if (!confirm("⚠️ ¿Estás seguro de limpiar todos los resultados reales? Se pondrán todos en blanco (Goles).")) return;
