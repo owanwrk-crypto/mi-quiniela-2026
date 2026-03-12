@@ -467,15 +467,14 @@ async function loadBracket() {
         let leftSideHtml = "";
         let rightSideHtml = "";
 
+        // LADO IZQUIERDO: 16 -> 8 -> 4 -> 2
         phases.forEach(phaseId => {
             const phaseMatches = matches.filter(m => {
                 const g = (m.grupo || "").toUpperCase();
                 return g === phaseId || g.includes(phaseId) || (phaseId === "SEMIFINAL" && g.includes("SEMI"));
             });
-
             const half = Math.ceil(phaseMatches.length / 2);
             const leftMatches = phaseMatches.slice(0, half);
-            const rightMatches = phaseMatches.slice(half);
 
             leftSideHtml += `
                 <div class="bracket-col col-${phaseId.toLowerCase()}">
@@ -485,15 +484,25 @@ async function loadBracket() {
                     </div>
                 </div>
             `;
+        });
 
-            rightSideHtml = `
+        // LADO DERECHO (Espejo): 2 -> 4 -> 8 -> 16 (pegado a la final va Semi)
+        [...phases].reverse().forEach(phaseId => {
+            const phaseMatches = matches.filter(m => {
+                const g = (m.grupo || "").toUpperCase();
+                return g === phaseId || g.includes(phaseId) || (phaseId === "SEMIFINAL" && g.includes("SEMI"));
+            });
+            const half = Math.ceil(phaseMatches.length / 2);
+            const rightMatches = phaseMatches.slice(half);
+
+            rightSideHtml += `
                 <div class="bracket-col col-${phaseId.toLowerCase()} right-side">
                     <div class="col-title-premium">${phaseId}</div>
                     <div class="col-matches-flow">
                         ${rightMatches.map(m => renderBracketMatch(m)).join("")}
                     </div>
                 </div>
-            ` + rightSideHtml; 
+            `;
         });
 
         // Centro: Final y Campeón

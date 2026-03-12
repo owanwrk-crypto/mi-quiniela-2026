@@ -729,14 +729,14 @@ input[type=number] {
 
 /* --- LLAVE MÁGICA SIMÉTRICA PREMIUM --- */
 .bracket-wrapper {
-  padding: 40px 0;
+  padding: 20px 0;
   width: 100%;
 }
 
 .bracket-scroll-container {
   overflow-x: auto;
-  padding: 40px;
-  background: radial-gradient(circle at center, rgba(0, 242, 255, 0.05) 0%, transparent 80%);
+  padding: 20px;
+  background: radial-gradient(circle at center, rgba(0, 242, 255, 0.05) 0%, transparent 85%);
 }
 
 /* 1. GRUPOS SUPERIORES PREMIUM */
@@ -744,19 +744,19 @@ input[type=number] {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 15px;
-  margin-bottom: 60px;
-  padding: 20px;
+  gap: 10px;
+  margin-bottom: 40px;
+  padding: 15px;
   border-bottom: 1px solid var(--border);
 }
 
 .bracket-group-card {
   background: var(--glass);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  width: 140px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 8px;
+  width: 130px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 .group-tag {
@@ -781,29 +781,35 @@ input[type=number] {
 /* 2. LAYOUT PREMIUM FULL WIDTH */
 .bracket-layout-premium {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
-  min-width: 1600px; /* Asegura espacio para la estructura completa */
+  min-width: 1800px; /* Expandido para usar todo el ancho */
+  padding: 0 20px;
   position: relative;
 }
 
 .side-wing {
   display: flex;
   flex: 1;
-  justify-content: space-around;
+  justify-content: space-between; /* Espaciado máximo entre columnas */
   align-items: center;
 }
 
+.side-wing.left {
+  padding-right: 20px;
+}
+
 .side-wing.right {
-  flex-direction: row-reverse;
+  padding-left: 20px;
 }
 
 .bracket-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 800px;
+  height: 850px;
+  flex: 1; /* Cada columna toma espacio igual */
   position: relative;
 }
 
@@ -950,6 +956,11 @@ input[type=number] {
 /* Conectores Derecha */
 .side-wing.right .bracket-match-card::after {
   left: -40px;
+}
+
+/* Corregir títulos del lado derecho para que no se amontonen */
+.side-wing.right .bracket-col {
+  flex-direction: column;
 }
 
 /* Ocultar última línea antes del centro */
