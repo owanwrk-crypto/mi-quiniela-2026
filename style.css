@@ -727,7 +727,128 @@ input[type=number] {
   border-color: var(--accent);
 }
 
-/* KNOCKOUT VIEW */
+/* --- BRACKET / LLAVE MÁGICA --- */
+.bracket-wrapper {
+  padding: 40px 0;
+  overflow: hidden;
+}
+
+.bracket-main-title {
+  font-family: var(--font-header);
+  text-align: center;
+  margin-bottom: 50px;
+  color: var(--accent);
+  letter-spacing: 5px;
+  text-shadow: 0 0 15px var(--accent-glow);
+}
+
+.bracket-scroll-container {
+  overflow-x: auto;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.bracket-container {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+  min-width: max-content;
+}
+
+.bracket-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 30px;
+  min-width: 220px;
+}
+
+.bracket-column h4 {
+  font-family: var(--font-header);
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.5;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.bracket-match {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+  width: 220px;
+}
+
+.bracket-match:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.bracket-team.winner {
+  background: rgba(0, 242, 255, 0.1);
+  color: var(--accent);
+}
+
+.bracket-team img {
+  width: 20px;
+  height: 14px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.bracket-score {
+  margin-left: auto;
+  font-weight: 900;
+  font-family: var(--font-header);
+}
+
+.bracket-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* LÍNEAS CONECTORAS */
+.bracket-match::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  width: 30px;
+  height: 2px;
+  background: var(--border);
+}
+
+.bracket-column:last-child .bracket-match::after {
+  display: none;
+}
+
+/* Ajustes para que el scrollbar no tape el diseño */
+.bracket-scroll-container::-webkit-scrollbar {
+  height: 10px;
+}
+
+@media (max-width: 1200px) {
+  .bracket-scroll-container {
+    justify-content: flex-start;
+  }
+}
 .knockout-list-container {
   max-width: 800px;
   margin: 0 auto;

@@ -428,6 +428,71 @@ async function adminUpdateMatch(id, grupo) {
 }
 
 /**
+ * Renderiza la Llave Mágica (Bracket) del torneo
+ */
+async function loadBracket() {
+    const container = document.getElementById("bracket-container");
+    container.innerHTML = `<p class="empty-msg">Cargando Llave Mágica...</p>`;
+
+    try {
+        const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
+        if (error || !matches) return;
+
+        // Definir las columnas del bracket
+        const phases = [
+            { id: "16AVOS", label: "16AVOS DE FINAL" },
+            { id: "OCTAVOS", label: "OCTAVOS" },
+            { id: "CUARTOS", label: "CUARTOS" },
+            { id: "SEMIFINAL", label: "SEMIFINAL" },
+            { id: "FINAL", label: "FINAL" }
+        ];
+
+        container.innerHTML = "";
+
+        phases.forEach(phase => {
+            const phaseMatches = matches.filter(m => {
+                const g = (m.grupo || "").toUpperCase();
+                return g === phase.id || g.includes(phase.id) || (phase.id === "SEMIFINAL" && g.includes("SEMI"));
+            });
+
+            if (phaseMatches.length > 0) {
+                let matchCards = phaseMatches.map(m => {
+                    const winA = m.goles_a !== null && m.goles_b !== null && (m.goles_a > m.goles_b || (m.goles_a === m.goles_b && m.penales_a > m.penales_b));
+                    const winB = m.goles_a !== null && m.goles_b !== null && (m.goles_b > m.goles_a || (m.goles_a === m.goles_b && m.penales_b > m.penales_a));
+
+                    return `
+                        <div class="bracket-match">
+                            <div class="bracket-team ${winA ? 'winner' : ''}">
+                                <img src="${flagURL(m.equipo_a)}">
+                                <span>${m.equipo_a || 'TBD'}</span>
+                                <span class="bracket-score">${m.goles_a ?? ''}</span>
+                            </div>
+                            <div class="bracket-divider"></div>
+                            <div class="bracket-team ${winB ? 'winner' : ''}">
+                                <img src="${flagURL(m.equipo_b)}">
+                                <span>${m.equipo_b || 'TBD'}</span>
+                                <span class="bracket-score">${m.goles_b ?? ''}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+
+                container.innerHTML += `
+                    <div class="bracket-column">
+                        <h4>${phase.label}</h4>
+                        ${matchCards}
+                    </div>
+                `;
+            }
+        });
+
+    } catch (e) {
+        console.error("Error cargando bracket:", e);
+        container.innerHTML = `<p class="empty-msg">Error al cargar la llave.</p>`;
+    }
+}
+
+/**
  * "Magia" del Bracket: Empuja al ganador al siguiente partido automáticamente.
  */
 async function pushWinnerToNextMatch(currentMatchId, results) {
@@ -636,6 +701,7 @@ function showTab(tab) {
         'rules-section', 
         'admin-section', 
         'predictions-others-section',
+        'bracket-section',
         'save-btn'
     ];
     
@@ -667,6 +733,9 @@ function showTab(tab) {
         adminLoadMatches("Grupos");
     } else if (tab === "Reglas") {
         document.getElementById("rules-section").style.display = "block";
+    } else if (tab === "Llave") {
+        document.getElementById("bracket-section").style.display = "block";
+        if (typeof loadBracket === 'function') loadBracket();
     } else {
         // Fases: Grupos, 16avos, Octavos, Cuartos, Semifinal, Final
         document.getElementById("wall-chart-section").style.display = "block";
