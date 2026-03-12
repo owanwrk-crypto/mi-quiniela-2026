@@ -396,7 +396,7 @@ input[type=number] {
 
 .groups-wall-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas iguales */
   gap: 30px;
 }
 
@@ -1241,12 +1241,11 @@ input[type=number] {
   .admin-item-match { flex-direction: column; gap: 15px; }
 }
 
-@media (max-width: 992px) {
-  .login-page-wrapper {
-    flex-direction: column;
-    text-align: center;
-    gap: 40px;
+@media (max-width: 900px) {
+  .groups-wall-grid {
+    grid-template-columns: 1fr;
   }
+}
   .hero-content {
     text-align: center;
   }

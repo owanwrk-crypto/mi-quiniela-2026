@@ -320,8 +320,11 @@ async function adminLoadMatches(fase) {
     if (error || !matches) return;
 
     const filtered = matches.filter(m => {
-        if (fase === "Grupos") return m.grupo.length === 1 || m.grupo.toUpperCase().includes("GRUPO");
-        return m.grupo.toLowerCase() === fase.toLowerCase();
+        const g = (m.grupo || "").trim().toUpperCase();
+        if (fase === "Grupos") {
+            return g.length === 1 || g.includes("GRUPO") || g.includes("GROUP") || g === "GRUPOS";
+        }
+        return g === fase.toUpperCase();
     });
 
     if (filtered.length === 0) {
@@ -827,7 +830,11 @@ try {
         const phase = filterPhase.toUpperCase();
         
         if (isGroups) {
-            return g.length === 1 || g.includes("GRUPO"); 
+            // Un partido es de grupos si:
+            // 1. Su grupo es una sola letra (A, B, C...)
+            // 2. Contiene la palabra "GRUPO" o "GROUP"
+            // 3. Su fase se llama exactamente "GRUPOS"
+            return g.length === 1 || g.includes("GRUPO") || g.includes("GROUP") || g === "GRUPOS"; 
         }
         
         // Mapeo flexible pero con prioridad a coincidencia exacta para evitar vacíos
@@ -843,10 +850,8 @@ try {
         return g.includes(phase);
     });
 
-    if (isGroups && filteredMatches.length === 0) {
-        filteredMatches = matches.filter(m => m.grupo);
-    }
-
+    // Removido el fallback que causaba mostrar todos los partidos en la pestaña de Grupos
+    
     // Corregido: Usar 'bets' (datos frescos) en lugar de 'pronosticosUsuario' (que puede estar desactualizado)
     const faseGuardada = filteredMatches.length > 0 && filteredMatches.every(m => 
         bets?.some(p => p.partido_id === m.id)
@@ -874,7 +879,7 @@ try {
             grupos[gName].push(m)
         })
 
-        Object.keys(grupos).forEach((g, index)=>{
+        Object.keys(grupos).sort().forEach((g, index)=>{
             let rows=""
             grupos[g].forEach(m=>{
                 const b=bets?.find(x=>x.partido_id===m.id)
