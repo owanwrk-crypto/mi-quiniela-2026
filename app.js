@@ -414,6 +414,104 @@ async function adminResetPredictions() {
     else alert("Sistema reseteado correctamente");
 }
 
+async function adminDownloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    try {
+        // Cargar datos
+        const { data: perfiles } = await _sb.from("perfiles").select("*").order("nombre");
+        const { data: matches } = await _sb.from("partidos").select("*").order("id");
+        const { data: pronosticos } = await _sb.from("pronosticos").select("*");
+
+        if (!perfiles || !matches || !pronosticos) {
+            alert("No hay suficientes datos para generar el reporte.");
+            return;
+        }
+
+        // Filtrar administradores
+        const jugadores = perfiles.filter(p => {
+            const nombre = (p.nombre || "").trim().toUpperCase();
+            const rol = (p.rol || "").trim().toLowerCase();
+            return rol !== 'admin' && nombre !== 'ADMIN' && p.es_admin !== true;
+        });
+
+        // Configuración de encabezado
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(0, 242, 255); // Color neón
+        doc.text("REPORTE DE PRONÓSTICOS - MUNDIAL 2026", 105, 15, { align: "center" });
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generado el: ${new Date().toLocaleString()}`, 105, 22, { align: "center" });
+
+        let currentY = 30;
+
+        jugadores.forEach((player, index) => {
+            // Si no cabe el siguiente jugador, añadir página
+            if (currentY > 260) {
+                doc.addPage();
+                currentY = 20;
+            }
+
+            // Título de Jugador
+            doc.setFillColor(5, 22, 45); // Color oscuro
+            doc.rect(10, currentY, 190, 8, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(11);
+            doc.text(`JUGADOR: ${player.nombre.toUpperCase()}`, 15, currentY + 6);
+            currentY += 10;
+
+            // Pronósticos del jugador
+            const playerBets = pronosticos.filter(b => b.perfil_id === player.id);
+            
+            if (playerBets.length === 0) {
+                doc.setFont("helvetica", "italic");
+                doc.setTextColor(150);
+                doc.text("Sin pronósticos registrados.", 15, currentY + 5);
+                currentY += 10;
+            } else {
+                const tableRows = playerBets.map(b => {
+                    const m = matches.find(match => match.id === b.partido_id);
+                    if (!m) return null;
+                    
+                    const score = `${b.goles_a_user} - ${b.goles_b_user}`;
+                    const penalties = (b.penales_a_user != null) ? ` (P: ${b.penales_a_user}:${b.penales_b_user})` : "";
+                    const phase = m.grupo.length === 1 ? `Grupo ${m.grupo}` : m.grupo;
+
+                    return [
+                        phase,
+                        m.equipo_a,
+                        score + penalties,
+                        m.equipo_b
+                    ];
+                }).filter(r => r !== null);
+
+                doc.autoTable({
+                    startY: currentY,
+                    head: [['Fase', 'Equipo A', 'Pronóstico', 'Equipo B']],
+                    body: tableRows,
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [0, 242, 255], textColor: [0, 0, 0] },
+                    margin: { left: 10, right: 10 }
+                });
+
+                currentY = doc.lastAutoTable.finalY + 10;
+            }
+        });
+
+        doc.save(`Pronosticos_Mundial_2026.pdf`);
+
+    } catch (err) {
+        console.error("Error al generar PDF:", err);
+        alert("Error al generar el archivo PDF: " + err.message);
+    }
+}
+
+
 
 
 

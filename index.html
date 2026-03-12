@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 </head>
 
@@ -197,8 +199,10 @@ SALIR
 <!-- SUB-TAB: PELIGRO -->
 <div id="admin-subtab-danger" class="admin-subtab-content" style="display:none">
 <div class="admin-card danger-zone centered">
-<h3>⚠️ REINICIO DEL SISTEMA</h3>
-<p>Esta acción es irreversible. Se borrarán todos los pronósticos guardados por todos los usuarios para todas las fases.</p>
+<h3>📄 REPORTES Y SISTEMA</h3>
+<p>Genera un informe completo de todos los pronósticos o limpia la base de datos.</p>
+<button class="btn-pdf-report" onclick="adminDownloadPDF()">📥 DESCARGAR PRONÓSTICOS (PDF)</button>
+<div class="divider"></div>
 <button class="btn-danger-large" onclick="adminResetPredictions()">BORRAR TODOS LOS PRONÓSTICOS</button>
 </div>
 </div>

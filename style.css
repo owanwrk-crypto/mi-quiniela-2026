@@ -1148,6 +1148,48 @@ input[type=number] {
   padding: 50px;
 }
 
+.btn-pdf-report {
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 15px var(--accent-glow);
+}
+
+.btn-pdf-report:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px var(--accent-glow);
+  filter: brightness(1.1);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 25px 0;
+  position: relative;
+}
+
+.divider::after {
+  content: "O";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-deep);
+  padding: 0 10px;
+  font-size: 10px;
+  opacity: 0.3;
+}
+
 .btn-danger-large {
   background: var(--red);
   color: #fff;
