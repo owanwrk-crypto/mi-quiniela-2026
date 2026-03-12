@@ -428,11 +428,11 @@ async function adminUpdateMatch(id, grupo) {
 }
 
 /**
- * Renderiza la Llave Mágica Simétrica: Grupos arriba, Eliminatorias abajo (Espejo)
+ * Renderiza la Llave Mágica Simétrica PerfectA: 16-8-4-2-FINAL-2-4-8-16
  */
 async function loadBracket() {
     const container = document.getElementById("bracket-container");
-    container.innerHTML = `<div class="bracket-loader"><div class="loader-circle"></div><p>CONSTRUYENDO CAMINO AL CAMPEÓN...</p></div>`;
+    container.innerHTML = `<div class="bracket-loader"><div class="loader-circle"></div><p>SINCRO-LLAVE PREMIUM...</p></div>`;
 
     try {
         const { data: matches, error } = await _sb.from("partidos").select("*").order("id");
@@ -440,7 +440,7 @@ async function loadBracket() {
 
         container.innerHTML = "";
 
-        // 1. SECCIÓN SUPERIOR: GRUPOS
+        // 1. GRUPOS SUPERIORES (Compactos)
         const groupsMatches = matches.filter(m => {
             const g = (m.grupo || "").toUpperCase();
             return g.length === 1 || g.includes("GRUPO");
@@ -452,18 +452,16 @@ async function loadBracket() {
                 if(!groupsObj[m.grupo]) groupsObj[m.grupo] = [];
                 groupsObj[m.grupo].push(m);
             });
-
             let groupsHtml = Object.keys(groupsObj).sort().map(gName => `
                 <div class="bracket-group-card">
-                    <div class="group-tag">GRUPO ${gName}</div>
+                    <div class="group-tag">G-${gName}</div>
                     ${groupsObj[gName].map(m => renderBracketMatchMini(m)).join("")}
                 </div>
             `).join("");
-
-            container.innerHTML += `<div class="bracket-top-groups">${groupsHtml}</div>`;
+            container.innerHTML += `<div class="bracket-top-groups-premium">${groupsHtml}</div>`;
         }
 
-        // 2. SECCIÓN INFERIOR: LLAVE SIMÉTRICA
+        // 2. LLAVE SIMÉTRICA (16-8-4-2 - FINAL - 2-4-8-16)
         const phases = ["16AVOS", "OCTAVOS", "CUARTOS", "SEMIFINAL"];
         
         let leftSideHtml = "";
@@ -475,59 +473,62 @@ async function loadBracket() {
                 return g === phaseId || g.includes(phaseId) || (phaseId === "SEMIFINAL" && g.includes("SEMI"));
             });
 
-            // Dividir en mitad izquierda y derecha
             const half = Math.ceil(phaseMatches.length / 2);
             const leftMatches = phaseMatches.slice(0, half);
             const rightMatches = phaseMatches.slice(half);
 
             leftSideHtml += `
                 <div class="bracket-col col-${phaseId.toLowerCase()}">
-                    <div class="col-title">${phaseId}</div>
-                    ${leftMatches.map(m => renderBracketMatch(m)).join("")}
+                    <div class="col-title-premium">${phaseId}</div>
+                    <div class="col-matches-flow">
+                        ${leftMatches.map(m => renderBracketMatch(m)).join("")}
+                    </div>
                 </div>
             `;
 
             rightSideHtml = `
-                <div class="bracket-col col-${phaseId.toLowerCase()}">
-                    <div class="col-title">${phaseId}</div>
-                    ${rightMatches.map(m => renderBracketMatch(m)).join("")}
+                <div class="bracket-col col-${phaseId.toLowerCase()} right-side">
+                    <div class="col-title-premium">${phaseId}</div>
+                    <div class="col-matches-flow">
+                        ${rightMatches.map(m => renderBracketMatch(m)).join("")}
+                    </div>
                 </div>
-            ` + rightSideHtml; // El lado derecho se construye en orden inverso visualmente
+            ` + rightSideHtml; 
         });
 
-        // Partido Final y Campeón
+        // Centro: Final y Campeón
         const finalMatch = matches.find(m => (m.grupo || "").toUpperCase() === "FINAL");
         let championHtml = "";
         if (finalMatch) {
             const winner = getWinnerName(finalMatch);
             championHtml = `
-                <div class="bracket-center">
-                    <div class="final-container">
-                        <div class="col-title">GRAN FINAL</div>
+                <div class="bracket-center-premium">
+                    <div class="final-glow-box">
+                        <div class="col-title-premium gold">GRAN FINAL</div>
                         ${renderBracketMatch(finalMatch, true)}
                     </div>
-                    <div class="champion-podium ${winner ? 'has-winner' : ''}">
-                        <div class="trophy-glow"></div>
-                        <i class="fas fa-trophy champion-icon"></i>
-                        <div class="champion-name">${winner || '¿QUIÉN SERÁ EL REY?'}</div>
-                        ${winner ? `<img src="${flagURL(winner)}" class="champion-flag">` : ''}
-                        <div class="champion-label">CAMPEÓN MUNDIAL 2026</div>
+                    <div class="champion-display ${winner ? 'revealed' : ''}">
+                        <div class="champion-aura"></div>
+                        <div class="champion-trophy">🏆</div>
+                        <div class="champion-name-glow">${winner || '¿QUIÉN SERÁ EL REY?'}</div>
+                        ${winner ? `<img src="${flagURL(winner)}" class="champion-flag-large">` : ''}
+                        <div class="champion-subtitle">WORLD CHAMPION 2026</div>
                     </div>
                 </div>
             `;
         }
 
         container.innerHTML += `
-            <div class="bracket-mirror-layout">
-                <div class="bracket-side left">${leftSideHtml}</div>
+            <div class="bracket-layout-premium">
+                <div class="side-wing left">${leftSideHtml}</div>
                 ${championHtml}
-                <div class="bracket-side right">${rightSideHtml}</div>
+                <div class="side-wing right">${rightSideHtml}</div>
             </div>
         `;
 
     } catch (e) {
         console.error("Error cargando bracket:", e);
-        container.innerHTML = `<p class="empty-msg">ERROR EN EL NÚCLEO DE LA LLAVE</p>`;
+        container.innerHTML = `<p class="empty-msg">ERROR EN EL NÚCLEO</p>`;
     }
 }
 
