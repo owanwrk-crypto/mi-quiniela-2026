@@ -804,11 +804,58 @@ body:has(#bracket-section[style*="display: block"]) {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px;
-  width: 100px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   transition: all 0.3s ease;
   backdrop-filter: blur(5px);
+}
+
+.bracket-group-card.standings-card {
+  width: 155px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px;
+}
+
+.mini-standings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.mini-standings-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.3s ease;
+}
+
+.mini-standings-row.qualified {
+  background: rgba(0, 242, 255, 0.05);
+  border-left: 2px solid var(--accent);
+}
+
+.pos {
+  font-weight: 800;
+  color: var(--accent);
+  min-width: 15px;
+}
+
+.team-name-mini {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.team-pts-mini {
+  font-weight: 900;
+  color: #fff;
+  font-family: var(--font-header);
 }
 
 .bracket-group-card:hover {

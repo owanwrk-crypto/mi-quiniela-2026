@@ -124,12 +124,19 @@ function procesarAvance(partidos) {
         const g = (p.grupo || "").trim().toUpperCase();
         const isGroupPhase = g.length === 1 || g.includes("GRUPO");
         
-        if (isGroupPhase && p.goles_a !== null && p.goles_b !== null) {
-            // Inicializar equipos
-            [p.equipo_a, p.equipo_b].forEach(eq => {
-                if (!puntos[eq]) puntos[eq] = { nombre: eq, grupo: g.length === 1 ? g : g.replace("GRUPO ", ""), pts: 0, dg: 0 };
-            });
+        // Inicializar equipos incluso si no tienen partidos jugados para que aparezcan en la tabla
+        [p.equipo_a, p.equipo_b].forEach(eq => {
+            if (eq && !puntos[eq] && isGroupPhase) {
+                puntos[eq] = { 
+                    nombre: eq, 
+                    grupo: g.length === 1 ? g : g.replace("GRUPO ", ""), 
+                    pts: 0, 
+                    dg: 0 
+                };
+            }
+        });
 
+        if (isGroupPhase && p.goles_a !== null && p.goles_b !== null) {
             // Lógica de puntos
             puntos[p.equipo_a].dg += (p.goles_a - p.goles_b);
             puntos[p.equipo_b].dg += (p.goles_b - p.goles_a);
@@ -143,8 +150,9 @@ function procesarAvance(partidos) {
         }
     });
 
-    // 2. Crear el diccionario de clasificados (Traductor)
+    // 2. Crear el diccionario de clasificados y tablas por grupo
     const clasificados = {};
+    const tablasPorGrupo = {};
     const letrasGrupos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 
     letrasGrupos.forEach(letra => {
@@ -152,11 +160,13 @@ function procesarAvance(partidos) {
             .filter(e => e.grupo === letra)
             .sort((a, b) => b.pts - a.pts || b.dg - a.dg);
 
+        tablasPorGrupo[letra] = ordenados;
+
         if (ordenados[0]) clasificados[`1${letra}`] = ordenados[0].nombre;
         if (ordenados[1]) clasificados[`2${letra}`] = ordenados[1].nombre;
     });
 
-    return clasificados;
+    return { clasificados, tablasPorGrupo };
 }
 
 
@@ -531,22 +541,24 @@ async function loadBracket() {
 
         container.innerHTML = "";
 
-        // 1. GRUPOS SUPERIORES (Compactos)
-        const groupsMatches = matches.filter(m => {
-            const g = (m.grupo || "").toUpperCase();
-            return g.length === 1 || g.includes("GRUPO");
-        });
+        // NUEVA LÓGICA: Procesar avance para obtener tablas de grupos y clasificados
+        const { clasificados, tablasPorGrupo } = procesarAvance(matches);
 
-        if (groupsMatches.length > 0) {
-            let groupsObj = {};
-            groupsMatches.forEach(m => {
-                if(!groupsObj[m.grupo]) groupsObj[m.grupo] = [];
-                groupsObj[m.grupo].push(m);
-            });
-            let groupsHtml = Object.keys(groupsObj).sort().map(gName => `
-                <div class="bracket-group-card">
-                    <div class="group-tag">G-${gName}</div>
-                    ${groupsObj[gName].map(m => renderBracketMatchMini(m)).join("")}
+        // 1. GRUPOS SUPERIORES (Tablas de Posiciones Compactas)
+        if (Object.keys(tablasPorGrupo).length > 0) {
+            let groupsHtml = Object.keys(tablasPorGrupo).sort().map(gName => `
+                <div class="bracket-group-card standings-card">
+                    <div class="group-tag">GRUPO ${gName}</div>
+                    <div class="mini-standings">
+                        ${tablasPorGrupo[gName].map((team, idx) => `
+                            <div class="mini-standings-row ${idx < 2 ? 'qualified' : ''}">
+                                <span class="pos">${idx + 1}º</span>
+                                <img src="${flagURL(team.nombre)}" class="flag-min">
+                                <span class="team-name-mini">${team.nombre.substring(0, 10)}</span>
+                                <span class="team-pts-mini">${team.pts} PTS</span>
+                            </div>
+                        `).join("")}
+                    </div>
                 </div>
             `).join("");
             container.innerHTML += `<div class="bracket-top-groups-premium">${groupsHtml}</div>`;
@@ -554,9 +566,6 @@ async function loadBracket() {
 
         // 2. LLAVE SIMÉTRICA (16-8-4-2 - FINAL - 2-4-8-16)
         const phases = ["16AVOS", "OCTAVOS", "CUARTOS", "SEMIFINAL"];
-        
-        // NUEVA LÓGICA: Procesar avance para traducir placeholders (1A, 2B, etc)
-        const clasificados = procesarAvance(matches);
 
         let leftSideHtml = "";
         let rightSideHtml = "";
@@ -985,7 +994,7 @@ async function loadOtherUserPredictions(userId) {
         }
 
         // NUEVA LÓGICA: Procesar avance para traducir placeholders (1A, 2B, etc)
-        const clasificados = procesarAvance(matches);
+        const { clasificados } = procesarAvance(matches);
 
         // Agrupar por fase de manera consistente
         let phases = {};
@@ -1095,7 +1104,7 @@ try {
     }
 
     // NUEVA LÓGICA: Procesar avance para traducir placeholders (1A, 2B, etc)
-    const clasificados = procesarAvance(matches);
+    const { clasificados } = procesarAvance(matches);
 
     // Determinar si es fase de grupos o eliminación directa
     const isGroups = filterPhase === "Grupos";
