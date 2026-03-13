@@ -576,36 +576,41 @@ input[type=number] {
   color: #cd7f32;
 }
 
-/* LOCK BANNER (Elegant & Discreet) */
+/* LOCK BANNER (Elegant, Discreet & Floating) */
+#wall-chart-section {
+  position: relative; /* Base para el banner absoluto */
+}
+
 .lock-banner {
+  position: absolute;
+  top: -10px; /* Flota sobre el encabezado */
+  right: 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
-  padding: 10px 25px;
-  border-radius: 50px; /* Capsule shape */
-  margin: 0 auto 30px;
-  width: fit-content;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--accent-glow);
+  padding: 6px 18px;
+  border-radius: 20px;
+  z-index: 100;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 15px var(--accent-glow);
   animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .lock-icon {
-  font-size: 16px;
-  opacity: 0.7;
+  font-size: 14px;
+  color: var(--accent);
 }
 
 .lock-text {
   font-family: var(--font-header);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--accent);
   letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.8;
+  font-weight: 700;
 }
 
 @keyframes fadeIn {

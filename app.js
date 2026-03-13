@@ -1109,14 +1109,22 @@ try {
         return;
     }
 
+    // NUEVA LÓGICA: Banner de bloqueo fuera del contenedor de la cuadrícula
+    const mainSection = document.getElementById("wall-chart-section");
+    // Eliminar banner previo si existe
+    const existingBanner = mainSection.querySelector(".lock-banner");
+    if(existingBanner) existingBanner.remove();
+
     if (isReadOnly) {
         let text = mensajeBloqueo || "FASE BLOQUEADA - PRONÓSTICOS REGISTRADOS";
-        container.innerHTML = `
-            <div class="lock-banner">
-                <span class="lock-icon">🔒</span>
-                <span class="lock-text">${text}</span>
-            </div>
-        ` + container.innerHTML;
+        const bannerDiv = document.createElement("div");
+        bannerDiv.className = "lock-banner";
+        bannerDiv.innerHTML = `
+            <span class="lock-icon">🔒</span>
+            <span class="lock-text">${text}</span>
+        `;
+        // Insertar al inicio de la sección, no dentro del grid
+        mainSection.insertBefore(bannerDiv, mainSection.firstChild);
     }
 
     // Vista de Grupos (Grid)
