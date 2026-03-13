@@ -1110,7 +1110,7 @@ try {
     }
 
     if (isReadOnly) {
-        let text = mensajeBloqueo || "Pronósticos guardados. Esta fase está bloqueada para modificaciones.";
+        let text = mensajeBloqueo || "FASE BLOQUEADA - PRONÓSTICOS REGISTRADOS";
         container.innerHTML = `
             <div class="lock-banner">
                 <span class="lock-icon">🔒</span>
