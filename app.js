@@ -88,11 +88,17 @@ function isPlaceholder(name) {
 }
 
 /**
- * Formatea nombres de equipos, traduciendo placeholders (1A -> 1º Grupo A)
+ * Formatea nombres de equipos, traduciendo placeholders (1A -> México)
+ * Ahora integra el diccionario de clasificados calculados.
  */
-function formatTeamName(name) {
+function formatTeamName(name, clasificados = {}) {
     if (!name || name.trim() === "" || name.toUpperCase() === "TBD") return "Por Definir";
     
+    // Si el nombre existe en el diccionario de clasificados calculados, usarlo
+    if (clasificados && clasificados[name]) {
+        return clasificados[name];
+    }
+
     const match = name.match(/^([123])([A-Z])$/);
     if (match) {
         const pos = match[1];
@@ -105,6 +111,52 @@ function formatTeamName(name) {
     }
     
     return name;
+}
+
+/**
+ * Calcula líderes y segundos de grupo basándose en resultados reales
+ */
+function procesarAvance(partidos) {
+    const puntos = {};
+
+    // 1. Recorrer partidos para sumar puntos
+    partidos.forEach(p => {
+        const g = (p.grupo || "").trim().toUpperCase();
+        const isGroupPhase = g.length === 1 || g.includes("GRUPO");
+        
+        if (isGroupPhase && p.goles_a !== null && p.goles_b !== null) {
+            // Inicializar equipos
+            [p.equipo_a, p.equipo_b].forEach(eq => {
+                if (!puntos[eq]) puntos[eq] = { nombre: eq, grupo: g.length === 1 ? g : g.replace("GRUPO ", ""), pts: 0, dg: 0 };
+            });
+
+            // Lógica de puntos
+            puntos[p.equipo_a].dg += (p.goles_a - p.goles_b);
+            puntos[p.equipo_b].dg += (p.goles_b - p.goles_a);
+
+            if (p.goles_a > p.goles_b) puntos[p.equipo_a].pts += 3;
+            else if (p.goles_b > p.goles_a) puntos[p.equipo_b].pts += 3;
+            else {
+                puntos[p.equipo_a].pts += 1;
+                puntos[p.equipo_b].pts += 1;
+            }
+        }
+    });
+
+    // 2. Crear el diccionario de clasificados (Traductor)
+    const clasificados = {};
+    const letrasGrupos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+
+    letrasGrupos.forEach(letra => {
+        const ordenados = Object.values(puntos)
+            .filter(e => e.grupo === letra)
+            .sort((a, b) => b.pts - a.pts || b.dg - a.dg);
+
+        if (ordenados[0]) clasificados[`1${letra}`] = ordenados[0].nombre;
+        if (ordenados[1]) clasificados[`2${letra}`] = ordenados[1].nombre;
+    });
+
+    return clasificados;
 }
 
 
@@ -503,6 +555,9 @@ async function loadBracket() {
         // 2. LLAVE SIMÉTRICA (16-8-4-2 - FINAL - 2-4-8-16)
         const phases = ["16AVOS", "OCTAVOS", "CUARTOS", "SEMIFINAL"];
         
+        // NUEVA LÓGICA: Procesar avance para traducir placeholders (1A, 2B, etc)
+        const clasificados = procesarAvance(matches);
+
         let leftSideHtml = "";
         let rightSideHtml = "";
 
@@ -519,7 +574,7 @@ async function loadBracket() {
                 <div class="bracket-col col-${phaseId.toLowerCase()}">
                     <div class="col-title-premium">${phaseId}</div>
                     <div class="col-matches-flow">
-                        ${leftMatches.map(m => renderBracketMatch(m)).join("")}
+                        ${leftMatches.map(m => renderBracketMatch(m, false, clasificados)).join("")}
                     </div>
                 </div>
             `;
@@ -538,7 +593,7 @@ async function loadBracket() {
                 <div class="bracket-col col-${phaseId.toLowerCase()} right-side">
                     <div class="col-title-premium">${phaseId}</div>
                     <div class="col-matches-flow">
-                        ${rightMatches.map(m => renderBracketMatch(m)).join("")}
+                        ${rightMatches.map(m => renderBracketMatch(m, false, clasificados)).join("")}
                     </div>
                 </div>
             `;
@@ -553,7 +608,7 @@ async function loadBracket() {
                 <div class="bracket-center-premium">
                     <div class="final-glow-box">
                         <div class="col-title-premium gold">GRAN FINAL</div>
-                        ${renderBracketMatch(finalMatch, true)}
+                        ${renderBracketMatch(finalMatch, true, clasificados)}
                     </div>
                     <div class="champion-display ${winner ? 'revealed' : ''}">
                         <div class="champion-aura"></div>
@@ -604,7 +659,7 @@ function renderBracketMatchMini(m) {
     `;
 }
 
-function renderBracketMatch(m, isFinal = false) {
+function renderBracketMatch(m, isFinal = false, clasificados = {}) {
     const winner = getWinnerName(m);
     const winA = winner && winner === m.equipo_a;
     const winB = winner && winner === m.equipo_b;
@@ -614,12 +669,12 @@ function renderBracketMatch(m, isFinal = false) {
         <div class="bracket-match-card ${isPending ? 'pending' : ''} ${isFinal ? 'final-card' : ''}">
             <div class="bracket-team-row ${winA ? 'winner-glow' : ''}">
                 <img src="${flagURL(m.equipo_a)}" class="bracket-flag">
-                <span class="team-name">${formatTeamName(m.equipo_a)}</span>
+                <span class="team-name">${formatTeamName(m.equipo_a, clasificados)}</span>
                 <span class="team-score">${m.goles_a ?? ''}</span>
             </div>
             <div class="bracket-team-row ${winB ? 'winner-glow' : ''}">
                 <img src="${flagURL(m.equipo_b)}" class="bracket-flag">
-                <span class="team-name">${formatTeamName(m.equipo_b)}</span>
+                <span class="team-name">${formatTeamName(m.equipo_b, clasificados)}</span>
                 <span class="team-score">${m.goles_b ?? ''}</span>
             </div>
             ${m.penales_a !== null ? `<div class="bracket-penalties">P: ${m.penales_a}-${m.penales_b}</div>` : ''}
@@ -929,6 +984,9 @@ async function loadOtherUserPredictions(userId) {
             return;
         }
 
+        // NUEVA LÓGICA: Procesar avance para traducir placeholders (1A, 2B, etc)
+        const clasificados = procesarAvance(matches);
+
         // Agrupar por fase de manera consistente
         let phases = {};
         matches.forEach(m => {
@@ -981,11 +1039,11 @@ async function loadOtherUserPredictions(userId) {
                     <div class="wall-match ${resultClass}">
                         <div class="team-left">
                             <img class="flag" src="${flagURL(m.equipo_a)}">
-                            <span>${formatTeamName(m.equipo_a)}</span>
+                            <span>${formatTeamName(m.equipo_a, clasificados)}</span>
                         </div>
                         ${scoreUI}
                         <div class="team-right">
-                            <span>${formatTeamName(m.equipo_b)}</span>
+                            <span>${formatTeamName(m.equipo_b, clasificados)}</span>
                             <img class="flag" src="${flagURL(m.equipo_b)}">
                         </div>
                     </div>
@@ -1035,6 +1093,9 @@ try {
         container.innerHTML = `<p class="empty-msg">No se encontraron partidos en la base de datos.</p>`;
         return;
     }
+
+    // NUEVA LÓGICA: Procesar avance para traducir placeholders (1A, 2B, etc)
+    const clasificados = procesarAvance(matches);
 
     // Determinar si es fase de grupos o eliminación directa
     const isGroups = filterPhase === "Grupos";
@@ -1146,7 +1207,7 @@ try {
                     <div class="wall-match ${resultClass}">
                         <div class="team-left">
                             <img class="flag" src="${flagURL(m.equipo_a)}">
-                            <span>${formatTeamName(m.equipo_a)}</span>
+                            <span>${formatTeamName(m.equipo_a, clasificados)}</span>
                         </div>
                         <div class="score-inputs">
                             <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${isReadOnly ? "disabled":""} value="${b?.goles_a_user ?? ''}">
@@ -1154,7 +1215,7 @@ try {
                             <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${isReadOnly ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                         </div>
                         <div class="team-right">
-                            <span>${formatTeamName(m.equipo_b)}</span>
+                            <span>${formatTeamName(m.equipo_b, clasificados)}</span>
                             <img class="flag" src="${flagURL(m.equipo_b)}">
                         </div>
                     </div>
@@ -1180,7 +1241,7 @@ try {
                 <div class="knockout-match ${resultClass}" style="animation: groupEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: ${index * 0.1}s">
                     <div class="team-left knockout-team">
                         <img class="flag-large" src="${flagURL(m.equipo_a)}">
-                        <span>${formatTeamName(m.equipo_a)}</span>
+                        <span>${formatTeamName(m.equipo_a, clasificados)}</span>
                     </div>
                     
                     <div class="score-inputs knockout-scores">
@@ -1204,7 +1265,7 @@ try {
                     </div>
 
                     <div class="team-right knockout-team">
-                        <span>${formatTeamName(m.equipo_b)}</span>
+                        <span>${formatTeamName(m.equipo_b, clasificados)}</span>
                         <img class="flag-large" src="${flagURL(m.equipo_b)}">
                     </div>
                 </div>
