@@ -1252,8 +1252,24 @@ try {
 
     if (error) {
         console.error("Error al guardar pronósticos:", error);
-        alert("Hubo un error al guardar tus pronósticos: " + error.message);
-        return;
+        
+        // Manejo defensivo: Si el error es por falta de columnas de penales, reintentar sin ellas
+        if (error.message.includes("penales_a_user") || error.message.includes("penales_b_user")) {
+            console.warn("La tabla 'pronosticos' no tiene columnas de penales. Reintentando sin ellas...");
+            const cleanData = dataToUpsert.map(item => {
+                const { penales_a_user, penales_b_user, ...rest } = item;
+                return rest;
+            });
+            const { error: error2 } = await _sb.from("pronosticos").upsert(cleanData, { onConflict: 'perfil_id,partido_id' });
+            
+            if (error2) {
+                alert("Hubo un error al guardar tus pronósticos: " + error2.message);
+                return;
+            }
+        } else {
+            alert("Hubo un error al guardar tus pronósticos: " + error.message);
+            return;
+        }
     }
 
     // Actualizar el estado local y la UI
