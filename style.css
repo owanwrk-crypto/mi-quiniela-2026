@@ -576,6 +576,36 @@ input[type=number] {
   color: #cd7f32;
 }
 
+/* LOCK BANNER FOR GROUPS */
+.lock-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid var(--red-glow);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  animation: fadeIn 0.5s ease;
+}
+
+.lock-icon {
+  font-size: 24px;
+}
+
+.lock-text {
+  font-family: var(--font-header);
+  font-size: 14px;
+  color: #ff4444;
+  letter-spacing: 1px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .highlight-player td {
   border: 1px solid var(--accent) !important;
   background: var(--accent-glow) !important;

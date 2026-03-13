@@ -1072,6 +1072,30 @@ try {
         bets?.some(p => p.partido_id === m.id)
     );
 
+    // NUEVA LÓGICA: Bloqueo de grupos 24 horas antes del primer partido
+    let faseBloqueadaPorTiempo = false;
+    let mensajeBloqueo = "";
+
+    if (isGroups && filteredMatches.length > 0) {
+        // Encontrar el partido más temprano de la fase de grupos
+        const firstMatch = [...filteredMatches].sort((a, b) => new Date(a.fecha) - new Date(b.fecha))[0];
+        if (firstMatch && firstMatch.fecha) {
+            const matchDate = new Date(firstMatch.fecha);
+            const now = new Date();
+            const timeDiff = matchDate - now;
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+            if (hoursDiff <= 24) {
+                faseBloqueadaPorTiempo = true;
+                mensajeBloqueo = hoursDiff <= 0 
+                    ? "La fase de grupos ya ha comenzado. Registros cerrados." 
+                    : `Los registros se cierran 24h antes del primer partido. Tiempo restante: ${Math.floor(hoursDiff)}h`;
+            }
+        }
+    }
+
+    const isReadOnly = faseGuardada || faseBloqueadaPorTiempo;
+
     container.innerHTML=""
 
     if (filteredMatches.length === 0) {
@@ -1083,6 +1107,15 @@ try {
             </div>
         `;
         return;
+    }
+
+    if (faseBloqueadaPorTiempo) {
+        container.innerHTML += `
+            <div class="lock-banner">
+                <span class="lock-icon">🔒</span>
+                <span class="lock-text">${mensajeBloqueo}</span>
+            </div>
+        `;
     }
 
     // Vista de Grupos (Grid)
@@ -1107,9 +1140,9 @@ try {
                             <span>${formatTeamName(m.equipo_a)}</span>
                         </div>
                         <div class="score-inputs">
-                            <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                            <input type="number" class="wall-input" data-id="${m.id}" data-side="a" ${isReadOnly ? "disabled":""} value="${b?.goles_a_user ?? ''}">
                             <span>-</span>
-                            <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                            <input type="number" class="wall-input" data-id="${m.id}" data-side="b" ${isReadOnly ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                         </div>
                         <div class="team-right">
                             <span>${formatTeamName(m.equipo_b)}</span>
@@ -1143,20 +1176,20 @@ try {
                     
                     <div class="score-inputs knockout-scores">
                         <div class="score-group">
-                            <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${faseGuardada ? "disabled":""} value="${b?.goles_a_user ?? ''}">
+                            <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="a" ${isReadOnly ? "disabled":""} value="${b?.goles_a_user ?? ''}">
                             <div class="penalty-input-container" title="Penales si hay empate">
                                 <span class="penalty-label">P</span>
-                                <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${faseGuardada ? "disabled":""} value="${b?.penales_a_user ?? ''}">
+                                <input type="number" class="penalty-input" data-id="${m.id}" data-side="pa" ${isReadOnly ? "disabled":""} value="${b?.penales_a_user ?? ''}">
                             </div>
                         </div>
                         
                         <span class="vs-text">VS</span>
                         
                         <div class="score-group">
-                            <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${faseGuardada ? "disabled":""} value="${b?.goles_b_user ?? ''}">
+                            <input type="number" class="wall-input knockout-input" data-id="${m.id}" data-side="b" ${isReadOnly ? "disabled":""} value="${b?.goles_b_user ?? ''}">
                             <div class="penalty-input-container" title="Penales si hay empate">
                                 <span class="penalty-label">P</span>
-                                <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${faseGuardada ? "disabled":""} value="${b?.penales_b_user ?? ''}">
+                                <input type="number" class="penalty-input" data-id="${m.id}" data-side="pb" ${isReadOnly ? "disabled":""} value="${b?.penales_b_user ?? ''}">
                             </div>
                         </div>
                     </div>
@@ -1179,7 +1212,7 @@ try {
     }
 
     // Ocultar botón de guardar si la fase ya está bloqueada
-    if (faseGuardada) {
+    if (isReadOnly) {
         document.getElementById("save-btn").style.display = "none";
     }
 } catch (error) {
@@ -1205,8 +1238,8 @@ function getResultClass(m, b) {
 
 async function savePredictions(){
 
-// Pedir confirmación antes de guardar
-const confirmacion = confirm("¿Estás seguro de tus pronósticos? Una vez guardados, no podrás modificarlos para esta fase.");
+// Pedir confirmación antes de guardar con advertencia de guardado único
+const confirmacion = confirm("⚠️ ATENCIÓN: Solo puedes guardar tus pronósticos UNA VEZ por fase. Después de guardar, no podrás modificar tus resultados. ¿Estás seguro de continuar?");
 if(!confirmacion) return;
 
 const inputs = document.querySelectorAll(".wall-input, .penalty-input")
