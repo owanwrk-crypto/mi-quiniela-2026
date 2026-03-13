@@ -1067,8 +1067,8 @@ try {
 
     // Removido el fallback que causaba mostrar todos los partidos en la pestaña de Grupos
     
-    // Corregido: Usar 'bets' (datos frescos) en lugar de 'pronosticosUsuario' (que puede estar desactualizado)
-    const faseGuardada = filteredMatches.length > 0 && filteredMatches.every(m => 
+    // NUEVA LÓGICA: Consideramos la fase guardada si hay AL MENOS UN pronóstico (para cumplir con el guardado único)
+    const faseGuardada = filteredMatches.length > 0 && filteredMatches.some(m => 
         bets?.some(p => p.partido_id === m.id)
     );
 
@@ -1109,13 +1109,14 @@ try {
         return;
     }
 
-    if (faseBloqueadaPorTiempo) {
-        container.innerHTML += `
+    if (isReadOnly) {
+        let text = mensajeBloqueo || "Pronósticos guardados. Esta fase está bloqueada para modificaciones.";
+        container.innerHTML = `
             <div class="lock-banner">
                 <span class="lock-icon">🔒</span>
-                <span class="lock-text">${mensajeBloqueo}</span>
+                <span class="lock-text">${text}</span>
             </div>
-        `;
+        ` + container.innerHTML;
     }
 
     // Vista de Grupos (Grid)
